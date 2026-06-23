@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# ish jarayoni hujjatlari
+/AGENTS.md
+/CLAUDE.md
+/CONTRACT.md
