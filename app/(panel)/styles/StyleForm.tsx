@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { api, ApiError } from "@/lib/api";
 import { Button, Field, Input, Textarea } from "@/components/ui";
+import { Thumb } from "@/components/ui/thumb";
 import { useToast } from "@/components/ui/toast";
 
 export interface Style {
@@ -127,8 +128,7 @@ export function StyleForm({
 
       <Field label="Rasm" hint="Ixtiyoriy">
         {isEdit && style?.image && !imageFile && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Thumb
             src={style.image}
             alt=""
             className="mb-2 h-20 rounded-lg border border-navy-100 object-cover"

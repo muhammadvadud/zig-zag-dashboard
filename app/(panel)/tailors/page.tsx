@@ -9,6 +9,7 @@ import { Card, Button, Badge, Loading, ErrorState, EmptyState } from "@/componen
 import { Pagination } from "@/components/ui/table";
 import { PageHeader } from "@/components/ui/page";
 import { Modal } from "@/components/ui/modal";
+import { Thumb } from "@/components/ui/thumb";
 import { useToast } from "@/components/ui/toast";
 import { TailorForm } from "./TailorForm";
 
@@ -65,8 +66,7 @@ export default function TailorsPage() {
             <Card key={t.id} className="p-5">
               <div className="flex items-start gap-4">
                 {t.photo ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                  <Thumb
                     src={t.photo}
                     alt={t.name_uz}
                     className="size-14 rounded-full object-cover"

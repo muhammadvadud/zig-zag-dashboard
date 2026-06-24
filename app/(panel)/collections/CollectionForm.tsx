@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { api, ApiError } from "@/lib/api";
 import { Button, Field, Input } from "@/components/ui";
+import { Thumb } from "@/components/ui/thumb";
 import { useToast } from "@/components/ui/toast";
 
 export interface AdminCollection {
@@ -127,8 +128,7 @@ export function CollectionForm({
 
       <Field label="Rasm" hint={isEdit ? "Yangi rasm tanlasangiz almashtiriladi" : undefined}>
         {isEdit && collection?.image && !file && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Thumb
             src={collection.image}
             alt={collection.title}
             className="mb-2 h-20 w-32 rounded-md border border-navy-100 object-cover"

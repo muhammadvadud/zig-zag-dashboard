@@ -7,6 +7,7 @@ import { Card, Button, Badge, ErrorState } from "@/components/ui";
 import { DataTable, type Column } from "@/components/ui/table";
 import { PageHeader } from "@/components/ui/page";
 import { Modal } from "@/components/ui/modal";
+import { Thumb } from "@/components/ui/thumb";
 import { useToast } from "@/components/ui/toast";
 import { asList } from "../_shared/list";
 import { CategoryForm, type Category } from "./CategoryForm";
@@ -40,13 +41,9 @@ export default function CategoriesPage() {
     {
       key: "icon",
       header: "Ikonka",
-      render: (c) =>
-        c.icon ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={c.icon} alt="" className="size-9 rounded-lg border border-navy-100 object-cover" />
-        ) : (
-          <span className="text-navy-300">—</span>
-        ),
+      render: (c) => (
+        <Thumb src={c.icon} alt="" className="size-9 rounded-lg border border-navy-100 object-cover" />
+      ),
     },
     {
       key: "name",

@@ -20,6 +20,7 @@ import {
   ErrorState,
 } from "@/components/ui";
 import { DataTable, type Column } from "@/components/ui/table";
+import { Thumb } from "@/components/ui/thumb";
 import { useToast } from "@/components/ui/toast";
 import { ORDER_STATUS_OPTIONS } from "@/components/ui";
 
@@ -63,8 +64,7 @@ export default function OrderDetailPage() {
       header: "Rasm",
       render: (it) =>
         it.image ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Thumb
             src={it.image}
             alt={it.product_name_snapshot}
             className="size-10 rounded-lg object-cover border border-navy-100"

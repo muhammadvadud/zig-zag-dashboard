@@ -29,53 +29,103 @@ export function DataTable<T>({
 }) {
   if (loading) return <Loading />;
   if (!rows || rows.length === 0) return <EmptyState title={empty || "Ma'lumot yo'q"} />;
+
+  const cell = (c: Column<T>, row: T): React.ReactNode =>
+    c.render ? c.render(row) : ((row as Record<string, unknown>)[c.key] as React.ReactNode);
+
+  // Columns with an empty header act as action/icon columns (no label in card view).
+  const actionCols = columns.filter((c) => !c.header);
+  const labeledCols = columns.filter((c) => c.header);
+  const titleCol = labeledCols[0];
+  const bodyCols = labeledCols.slice(1);
+
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-navy-100 bg-navy-50 text-left text-navy-400">
-            {columns.map((c) => (
-              <th
-                key={c.key}
-                className={cn(
-                  "px-4 py-2.5 text-xs font-semibold uppercase tracking-wide whitespace-nowrap",
-                  c.align === "right" && "text-right",
-                  c.align === "center" && "text-center"
-                )}
-              >
-                {c.header}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row, i) => (
-            <tr
-              key={(rowKey ? rowKey(row, i) : i) ?? i}
-              onClick={onRowClick ? () => onRowClick(row) : undefined}
-              className={cn(
-                "border-b border-navy-50 last:border-0 transition-colors hover:bg-navy-50/50",
-                onRowClick && "cursor-pointer"
-              )}
-            >
+    <>
+      {/* Desktop / tablet: table */}
+      <div className="hidden overflow-x-auto md:block">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-navy-100 bg-navy-50 text-left text-navy-400">
               {columns.map((c) => (
-                <td
+                <th
                   key={c.key}
                   className={cn(
-                    "px-4 py-3 text-navy-700 whitespace-nowrap",
+                    "px-4 py-2.5 text-xs font-semibold uppercase tracking-wide whitespace-nowrap",
                     c.align === "right" && "text-right",
-                    c.align === "center" && "text-center",
-                    c.className
+                    c.align === "center" && "text-center"
                   )}
                 >
-                  {c.render ? c.render(row) : ((row as Record<string, unknown>)[c.key] as React.ReactNode)}
-                </td>
+                  {c.header}
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {rows.map((row, i) => (
+              <tr
+                key={(rowKey ? rowKey(row, i) : i) ?? i}
+                onClick={onRowClick ? () => onRowClick(row) : undefined}
+                className={cn(
+                  "border-b border-navy-50 last:border-0 transition-colors hover:bg-navy-50/50",
+                  onRowClick && "cursor-pointer"
+                )}
+              >
+                {columns.map((c) => (
+                  <td
+                    key={c.key}
+                    className={cn(
+                      "px-4 py-3 text-navy-700 whitespace-nowrap",
+                      c.align === "right" && "text-right",
+                      c.align === "center" && "text-center",
+                      c.className
+                    )}
+                  >
+                    {cell(c, row)}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Mobile: card per row */}
+      <div className="space-y-3 p-3 md:hidden">
+        {rows.map((row, i) => (
+          <div
+            key={(rowKey ? rowKey(row, i) : i) ?? i}
+            onClick={onRowClick ? () => onRowClick(row) : undefined}
+            className={cn(
+              "rounded-xl border border-navy-100 bg-white p-4 shadow-sm",
+              onRowClick && "cursor-pointer active:bg-navy-50"
+            )}
+          >
+            <div className="flex items-start justify-between gap-3">
+              {titleCol && (
+                <div className="min-w-0 flex-1 font-medium text-navy-800">{cell(titleCol, row)}</div>
+              )}
+              {actionCols.length > 0 && (
+                <div className="flex shrink-0 items-center gap-1">
+                  {actionCols.map((c) => (
+                    <span key={c.key}>{cell(c, row)}</span>
+                  ))}
+                </div>
+              )}
+            </div>
+            {bodyCols.length > 0 && (
+              <dl className="mt-3 grid gap-2">
+                {bodyCols.map((c) => (
+                  <div key={c.key} className="flex items-center justify-between gap-3 text-sm">
+                    <dt className="shrink-0 text-navy-400">{c.header}</dt>
+                    <dd className={cn("min-w-0 text-right text-navy-700", c.className)}>{cell(c, row)}</dd>
+                  </div>
+                ))}
+              </dl>
+            )}
+          </div>
+        ))}
+      </div>
+    </>
   );
 }
 

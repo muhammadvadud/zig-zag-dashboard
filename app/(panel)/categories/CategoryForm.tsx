@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { api, ApiError } from "@/lib/api";
 import { Button, Field, Input } from "@/components/ui";
+import { Thumb } from "@/components/ui/thumb";
 import { useToast } from "@/components/ui/toast";
 
 export interface Category {
@@ -124,8 +125,7 @@ export function CategoryForm({
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field label="Ikonka" hint="Ixtiyoriy">
           {isEdit && category?.icon && !iconFile && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <Thumb
               src={category.icon}
               alt=""
               className="mb-2 size-14 rounded-lg border border-navy-100 object-cover"
@@ -141,8 +141,7 @@ export function CategoryForm({
 
         <Field label="Rasm" hint="Ixtiyoriy">
           {isEdit && category?.image && !imageFile && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <Thumb
               src={category.image}
               alt=""
               className="mb-2 size-14 rounded-lg border border-navy-100 object-cover"

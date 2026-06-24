@@ -7,6 +7,7 @@ import { Card, Button, Badge, ErrorState } from "@/components/ui";
 import { DataTable, type Column } from "@/components/ui/table";
 import { PageHeader } from "@/components/ui/page";
 import { Modal } from "@/components/ui/modal";
+import { Thumb } from "@/components/ui/thumb";
 import { useToast } from "@/components/ui/toast";
 import { asList, truncate } from "../_shared/list";
 import { StyleForm, type Style } from "./StyleForm";
@@ -40,13 +41,9 @@ export default function StylesPage() {
     {
       key: "image",
       header: "Rasm",
-      render: (s) =>
-        s.image ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={s.image} alt="" className="h-9 w-14 rounded-lg border border-navy-100 object-cover" />
-        ) : (
-          <span className="text-navy-300">—</span>
-        ),
+      render: (s) => (
+        <Thumb src={s.image} alt="" className="h-9 w-14 rounded-lg border border-navy-100 object-cover" />
+      ),
     },
     {
       key: "name",
