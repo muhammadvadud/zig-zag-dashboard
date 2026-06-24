@@ -40,7 +40,6 @@ export interface AdminUser {
   is_active: boolean;
   is_phone_verified: boolean;
   language: Lang;
-  ai_quota_plan: string;
   date_joined: string;
 }
 

@@ -80,7 +80,7 @@ function Section({
   children: ReactNode;
 }) {
   return (
-    <Card className="flex flex-col">
+    <Card className="flex flex-col transition-shadow hover:shadow-md">
       <CardHeader title={title} subtitle={subtitle} action={action} />
       <div className={bodyClassName ?? "px-5 pb-5"}>
         {loading ? (
@@ -181,7 +181,7 @@ export default function DashboardPage() {
           <Loading />
         </Card>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
           <KpiCard label="Bugungi savdo" value={money(o?.today_sales)} delta={d.today_sales_pct} icon={<Banknote className="size-5" />} accent />
           <KpiCard label="Oylik savdo" value={money(o?.month_sales)} delta={d.month_sales_pct} icon={<TrendingUp className="size-5" />} />
           <KpiCard label="Buyurtmalar (oy)" value={num(o?.orders_month)} delta={d.orders_pct} icon={<ClipboardList className="size-5" />} />

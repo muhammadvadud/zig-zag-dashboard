@@ -28,6 +28,12 @@
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
+@utility shadow-card {
+  box-shadow:
+    0 1px 2px -1px rgb(19 31 56 / 0.08),
+    0 4px 16px -4px rgb(19 31 56 / 0.08);
+}
+
 html,
 body {
   height: 100%;
@@ -37,6 +43,11 @@ body {
   background: var(--color-cream);
   color: var(--color-navy-800);
   font-family: var(--font-sans);
+}
+
+::selection {
+  background: var(--color-gold-light);
+  color: var(--color-navy-900);
 }
 
 ::-webkit-scrollbar {
