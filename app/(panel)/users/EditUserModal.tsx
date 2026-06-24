@@ -15,7 +15,6 @@ interface Form {
   role: Role;
   language: Lang;
   is_active: boolean;
-  ai_quota_plan: string;
 }
 
 export function EditUserModal({
@@ -35,7 +34,6 @@ export function EditUserModal({
     role: "customer",
     language: "uz",
     is_active: true,
-    ai_quota_plan: "",
   });
 
   useEffect(() => {
@@ -46,7 +44,6 @@ export function EditUserModal({
         role: user.role,
         language: user.language,
         is_active: user.is_active,
-        ai_quota_plan: user.ai_quota_plan ?? "",
       });
     }
   }, [user]);
@@ -145,15 +142,6 @@ export function EditUserModal({
               <option value="true">Faol</option>
               <option value="false">Nofaol</option>
             </Select>
-          </Field>
-
-          <Field label="AI kvota rejasi">
-            <Input
-              value={form.ai_quota_plan}
-              onChange={(e) =>
-                setForm({ ...form, ai_quota_plan: e.target.value })
-              }
-            />
           </Field>
         </div>
       </div>
