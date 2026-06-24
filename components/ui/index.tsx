@@ -14,7 +14,7 @@ export function Card({
   return (
     <div
       className={cn(
-        "rounded-2xl bg-white border border-navy-100 shadow-sm",
+        "rounded-2xl bg-white border border-navy-100 shadow-card transition-shadow",
         className
       )}
     >
@@ -34,9 +34,9 @@ export function CardHeader({
 }) {
   return (
     <div className="flex items-start justify-between gap-3 px-5 pt-5 pb-3">
-      <div>
-        <h3 className="text-navy-800 font-semibold">{title}</h3>
-        {subtitle && <p className="text-sm text-navy-400 mt-0.5">{subtitle}</p>}
+      <div className="space-y-0.5">
+        <h3 className="text-navy-800 font-semibold tracking-tight leading-tight">{title}</h3>
+        {subtitle && <p className="text-sm text-navy-400 leading-snug">{subtitle}</p>}
       </div>
       {action}
     </div>
@@ -156,18 +156,18 @@ export function Badge({
   className?: string;
 }) {
   const map: Record<string, string> = {
-    navy: "bg-navy-50 text-navy-700",
-    green: "bg-green-50 text-green-700",
-    amber: "bg-amber-50 text-amber-700",
-    red: "bg-red-50 text-red-700",
-    blue: "bg-blue-50 text-blue-700",
-    gold: "bg-gold/15 text-gold-dark",
-    gray: "bg-gray-100 text-gray-600",
+    navy: "bg-navy-50 text-navy-700 ring-navy-200/60",
+    green: "bg-green-50 text-green-700 ring-green-200/60",
+    amber: "bg-amber-50 text-amber-700 ring-amber-200/60",
+    red: "bg-red-50 text-red-700 ring-red-200/60",
+    blue: "bg-blue-50 text-blue-700 ring-blue-200/60",
+    gold: "bg-gold/15 text-gold-dark ring-gold/30",
+    gray: "bg-gray-100 text-gray-600 ring-gray-200/60",
   };
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
+        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset",
         map[color],
         className
       )}
@@ -226,8 +226,9 @@ export function Spinner({ className }: { className?: string }) {
 
 export function Loading({ label = "Yuklanmoqda..." }: { label?: string }) {
   return (
-    <div className="flex items-center justify-center gap-3 py-16 text-navy-400">
-      <Spinner /> <span>{label}</span>
+    <div className="flex flex-col items-center justify-center gap-3 py-16 text-navy-400">
+      <Spinner className="size-6 text-gold" />
+      <span className="text-sm">{label}</span>
     </div>
   );
 }
@@ -242,10 +243,16 @@ export function EmptyState({
   icon?: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-2 py-16 text-center">
-      {icon && <div className="text-navy-200">{icon}</div>}
-      <p className="text-navy-600 font-medium">{title}</p>
-      {hint && <p className="text-sm text-navy-400">{hint}</p>}
+    <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
+      {icon && (
+        <div className="flex size-12 items-center justify-center rounded-full bg-navy-50 text-navy-300">
+          {icon}
+        </div>
+      )}
+      <div className="space-y-1">
+        <p className="text-navy-700 font-medium">{title}</p>
+        {hint && <p className="text-sm text-navy-400 max-w-xs">{hint}</p>}
+      </div>
     </div>
   );
 }
@@ -253,8 +260,9 @@ export function EmptyState({
 export function ErrorState({ error }: { error: unknown }) {
   const msg = (error as Error)?.message || "Xatolik yuz berdi";
   return (
-    <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-6 text-center text-red-700">
-      {msg}
+    <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-6 text-center text-red-700">
+      <span className="flex size-9 items-center justify-center rounded-full bg-red-100 text-red-600 text-lg font-semibold">!</span>
+      <span className="text-sm font-medium">{msg}</span>
     </div>
   );
 }
