@@ -16,21 +16,9 @@ export interface Category {
 
 type FormState = {
   name: string;
-  slug: string;
   sort_order: string;
   is_active: boolean;
 };
-
-function slugify(s: string): string {
-  return s
-    .toLowerCase()
-    .replace(/['''ʻʼ`]/g, "")
-    .replace(/[^a-z0-9\s-]/g, "")
-    .trim()
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "");
-}
 
 function parseApiErrors(err: unknown): string {
   if (!(err instanceof ApiError)) return (err as Error)?.message || "Xatolik";
@@ -49,7 +37,6 @@ function parseApiErrors(err: unknown): string {
 function initial(category?: Category | null): FormState {
   return {
     name: category?.name ?? "",
-    slug: category?.slug ?? "",
     sort_order: category ? String(category.sort_order ?? 0) : "0",
     is_active: category?.is_active ?? true,
   };
@@ -68,22 +55,8 @@ export function CategoryForm({
   const notify = useToast();
   const [form, setForm] = useState<FormState>(() => initial(category));
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [slugEdited, setSlugEdited] = useState(isEdit && !!category?.slug);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  function handleNameChange(value: string) {
-    setForm((f) => ({
-      ...f,
-      name: value,
-      slug: slugEdited ? f.slug : slugify(value),
-    }));
-  }
-
-  function handleSlugChange(value: string) {
-    setSlugEdited(true);
-    setForm((f) => ({ ...f, slug: value }));
-  }
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -103,7 +76,6 @@ export function CategoryForm({
       if (imageFile) {
         const fd = new FormData();
         fd.append("name", form.name.trim());
-        fd.append("slug", form.slug.trim());
         fd.append("sort_order", String(Number(form.sort_order) || 0));
         fd.append("is_active", String(form.is_active));
         fd.append("image", imageFile);
@@ -115,7 +87,6 @@ export function CategoryForm({
       } else {
         const payload = {
           name: form.name.trim(),
-          slug: form.slug.trim(),
           sort_order: Number(form.sort_order) || 0,
           is_active: form.is_active,
         };
@@ -143,16 +114,8 @@ export function CategoryForm({
         </div>
       )}
 
-      <Field label="Nomi">
-        <Input value={form.name} onChange={(e) => handleNameChange(e.target.value)} />
-      </Field>
-
-      <Field label="Slug" hint="Nom yozilganda avtomatik to'ldiriladi">
-        <Input
-          value={form.slug}
-          onChange={(e) => handleSlugChange(e.target.value)}
-          placeholder="masalan: pardalar"
-        />
+      <Field label="Nomi" hint="Slug backend tomonidan avtomatik yaratiladi">
+        <Input value={form.name} onChange={(e) => set("name", e.target.value)} />
       </Field>
 
       <Field label="Rasm" hint="Ixtiyoriy">

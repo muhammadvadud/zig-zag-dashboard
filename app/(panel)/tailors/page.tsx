@@ -87,10 +87,12 @@ export default function TailorsPage() {
                   </div>
                   <p className="truncate text-sm text-navy-400">{t.specialty_uz || "—"}</p>
                   <div className="mt-2 flex items-center gap-4 text-sm text-navy-600">
-                    <span className="inline-flex items-center gap-1">
-                      <Star className="size-4 fill-gold text-gold" />
-                      {Number(t.rating || 0).toFixed(1)}
-                    </span>
+                    {Number(t.rating) > 0 && (
+                      <span className="inline-flex items-center gap-1">
+                        <Star className="size-4 fill-gold text-gold" />
+                        {Number(t.rating).toFixed(1)}
+                      </span>
+                    )}
                     <span className="text-navy-400">
                       {num(t.orders_count)} buyurtma
                     </span>

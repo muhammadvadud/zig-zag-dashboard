@@ -447,8 +447,8 @@ export default function DashboardPage() {
           />
         </Section>
 
-        {/* Tor jadvallar + Buyurtmalar holati — 3 ustun */}
-        <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-3">
+        {/* Tor jadvallar yonma-yon */}
+        <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
           <Section
             title="Yangi o'lchov so'rovlari"
             subtitle="Rejalashtirilgan uchrashuvlar"
@@ -492,20 +492,20 @@ export default function DashboardPage() {
               empty="Hammasi yetarli"
             />
           </Section>
-
-          {/* Buyurtmalar holati — pastga tushirildi */}
-          <Section
-            title="Buyurtmalar holati"
-            subtitle="Joriy taqsimot"
-            icon={<PieChart className="size-5" />}
-            action={<ViewAll href="/orders" label="Buyurtmalar" />}
-            loading={status.isLoading}
-            error={status.error}
-            isEmpty={!status.data?.items?.length}
-          >
-            <StatusDonut items={status.data?.items ?? []} />
-          </Section>
         </div>
+
+        {/* Buyurtmalar holati — alohida qatorda, to'liq kenglik */}
+        <Section
+          title="Buyurtmalar holati"
+          subtitle="Joriy taqsimot"
+          icon={<PieChart className="size-5" />}
+          action={<ViewAll href="/orders" label="Buyurtmalar" />}
+          loading={status.isLoading}
+          error={status.error}
+          isEmpty={!status.data?.items?.length}
+        >
+          <StatusDonut items={status.data?.items ?? []} />
+        </Section>
 
         {/* Yangi sharhlar — full width */}
         <Section

@@ -68,9 +68,10 @@ export function Placeholder({ title }: { title: string }) {
   );
 }
 
-// Star rating display.
+// Star rating display — hidden when value is 0 (no reviews yet).
 export function Stars({ value }: { value: number }) {
-  const n = Math.max(0, Math.min(5, Math.round(value || 0)));
+  if (!value || value <= 0) return null;
+  const n = Math.max(0, Math.min(5, Math.round(value)));
   return (
     <span className="text-gold" title={`${value} / 5`}>
       {"★".repeat(n)}

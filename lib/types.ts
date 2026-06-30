@@ -103,20 +103,23 @@ export interface ProductAttribute {
   value: string;
 }
 
-export interface ProductVariantImage {
-  id: number;
-  image: string;
-  sort_order?: number;
-}
-
 export interface ProductVariant {
   id: number;
-  color: number | null;
-  color_name?: string;
-  color_hex?: string;
-  stock: number;
-  images: ProductVariantImage[];
+  name: string;
+  width_cm: number | null;
+  height_cm: number | null;
+  extra_price: string;
+  unit_price: string;
   is_active: boolean;
+  label?: string;
+}
+
+export interface ProductImage {
+  id: number;
+  image_url: string;
+  is_main: boolean;
+  sort_order: number;
+  variant: number | null;
 }
 
 export interface AdminProduct {
