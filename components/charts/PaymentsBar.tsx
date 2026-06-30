@@ -12,7 +12,7 @@ import {
 } from "recharts";
 import type { PaymentSlice } from "@/lib/types";
 import { money, num } from "@/lib/format";
-import { BRAND, PALETTE } from "./colors";
+import { BRAND, PALETTE, CHART, shade } from "./colors";
 import { TooltipBox } from "./ChartTooltip";
 
 const PROVIDER_LABEL: Record<string, string> = {
@@ -38,23 +38,35 @@ export function PaymentsBar({ items }: { items: PaymentSlice[] }) {
   const data = (items ?? []).map((p) => ({ ...p, label: label(p.provider) }));
   return (
     <ResponsiveContainer width="100%" height={280}>
-      <BarChart data={data} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke={BRAND.navy100} vertical={false} />
+      <BarChart data={data} margin={{ top: 10, right: 14, left: 0, bottom: 0 }} barCategoryGap="28%">
+        <defs>
+          {data.map((_, i) => {
+            const base = PALETTE[i % PALETTE.length];
+            return (
+              <linearGradient key={i} id={`barFill-${i}`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={shade(base, 0.22)} />
+                <stop offset="100%" stopColor={base} />
+              </linearGradient>
+            );
+          })}
+        </defs>
+        <CartesianGrid strokeDasharray="4 6" stroke={CHART.grid} vertical={false} />
         <XAxis
           dataKey="label"
-          tick={{ fontSize: 11, fill: BRAND.navy400 }}
+          tick={{ fontSize: 11, fill: CHART.axis }}
           axisLine={false}
           tickLine={false}
+          dy={6}
         />
         <YAxis
           tickFormatter={compact}
-          tick={{ fontSize: 11, fill: BRAND.navy400 }}
+          tick={{ fontSize: 11, fill: CHART.axis }}
           axisLine={false}
           tickLine={false}
           width={48}
         />
         <Tooltip
-          cursor={{ fill: "#f3f5f9" }}
+          cursor={{ fill: CHART.cursorFill, radius: 8 }}
           content={({ active, payload }) => {
             if (!active || !payload?.length) return null;
             const p = payload[0].payload as PaymentSlice & { label: string };
@@ -69,9 +81,14 @@ export function PaymentsBar({ items }: { items: PaymentSlice[] }) {
             );
           }}
         />
-        <Bar dataKey="amount" radius={[8, 8, 0, 0]} maxBarSize={56}>
+        <Bar
+          dataKey="amount"
+          radius={[10, 10, 4, 4]}
+          maxBarSize={52}
+          background={{ fill: CHART.track, radius: 10 }}
+        >
           {data.map((_, i) => (
-            <Cell key={i} fill={PALETTE[i % PALETTE.length]} />
+            <Cell key={i} fill={`url(#barFill-${i})`} />
           ))}
         </Bar>
       </BarChart>

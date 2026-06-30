@@ -1,12 +1,21 @@
 "use client";
 
+import Link from "next/link";
 import {
+  Activity,
+  AlertTriangle,
+  ArrowRight,
   Banknote,
-  CalendarRange,
   ClipboardList,
+  CreditCard,
+  Layers,
+  PieChart,
   Receipt,
   Ruler,
+  ShoppingBag,
+  Star,
   TrendingUp,
+  Trophy,
   UserPlus,
   Users,
 } from "lucide-react";
@@ -57,32 +66,59 @@ interface PendingReview {
   created_at: string;
 }
 
+/* ---- "View all" styled link for section headers ---- */
+function ViewAll({ href, label = "Hammasi" }: { href: string; label?: string }) {
+  return (
+    <Link
+      href={href}
+      className="group/va inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold text-navy-500 transition-colors hover:bg-gold/10 hover:text-gold-dark"
+    >
+      {label}
+      <ArrowRight className="size-3.5 transition-transform group-hover/va:translate-x-0.5" />
+    </Link>
+  );
+}
+
+/* ---- small count chip used in section headers ---- */
+function CountChip({ n }: { n?: number }) {
+  if (n == null) return null;
+  return (
+    <span className="inline-flex min-w-6 items-center justify-center rounded-full bg-navy-50 px-2 py-0.5 text-xs font-bold text-navy-600 ring-1 ring-inset ring-navy-100">
+      {n}
+    </span>
+  );
+}
+
 /* ---- generic section that handles loading / error / empty ---- */
 function Section({
   title,
   subtitle,
+  icon,
   action,
   loading,
   error,
   isEmpty,
   emptyHint,
   bodyClassName,
+  className,
   children,
 }: {
   title: string;
   subtitle?: string;
+  icon?: ReactNode;
   action?: ReactNode;
   loading?: boolean;
   error?: unknown;
   isEmpty?: boolean;
   emptyHint?: string;
   bodyClassName?: string;
+  className?: string;
   children: ReactNode;
 }) {
   return (
-    <Card className="flex flex-col transition-shadow hover:shadow-md">
-      <CardHeader title={title} subtitle={subtitle} action={action} />
-      <div className={bodyClassName ?? "px-5 pb-5"}>
+    <Card className={`flex h-full flex-col hover:shadow-card-hover ${className ?? ""}`}>
+      <CardHeader title={title} subtitle={subtitle} icon={icon} action={action} />
+      <div className={bodyClassName ?? "px-6 pb-6 pt-1"}>
         {loading ? (
           <Loading />
         ) : error ? (
@@ -130,15 +166,15 @@ export default function DashboardPage() {
     { key: "order_number", header: "Raqam", render: (r) => <span className="font-medium text-navy-800">{r.order_number}</span> },
     { key: "customer", header: "Mijoz" },
     { key: "status", header: "Holat", render: (r) => <StatusBadge status={r.status} /> },
-    { key: "payment_status", header: "To'lov", render: (r) => <PaymentBadge status={r.payment_status} /> },
+    { key: "payment_status", header: "To'lov", hideOnMobile: true, render: (r) => <PaymentBadge status={r.payment_status} /> },
     { key: "total", header: "Summa", align: "right", render: (r) => money(r.total) },
-    { key: "created_at", header: "Sana", align: "right", render: (r) => fmtDate(r.created_at) },
+    { key: "created_at", header: "Sana", align: "right", hideOnMobile: true, render: (r) => fmtDate(r.created_at) },
   ];
 
   const measurementCols: Column<RecentMeasurement>[] = [
     { key: "customer", header: "Mijoz", render: (r) => <span className="font-medium text-navy-800">{r.customer}</span> },
     { key: "preferred_date", header: "Sana", render: (r) => fmtDate(r.preferred_date) },
-    { key: "time_slot", header: "Vaqt", render: (r) => r.time_slot || "—" },
+    { key: "time_slot", header: "Vaqt", hideOnMobile: true, render: (r) => r.time_slot || "—" },
     { key: "status", header: "Holat", align: "right", render: (r) => <Badge color="navy">{r.status}</Badge> },
   ];
 
@@ -156,18 +192,18 @@ export default function DashboardPage() {
 
   const reviewCols: Column<PendingReview>[] = [
     { key: "product", header: "Mahsulot", render: (r) => <span className="font-medium text-navy-800">{r.product}</span> },
-    { key: "user_name", header: "Mijoz" },
+    { key: "user_name", header: "Mijoz", hideOnMobile: true },
     { key: "rating", header: "Baho", align: "center", render: (r) => <Badge color="gold">{r.rating} ★</Badge> },
     {
       key: "comment",
       header: "Izoh",
-      render: (r) => <span className="block max-w-[16rem] truncate text-navy-600">{r.comment || "—"}</span>,
+      render: (r) => <span className="block max-w-[10rem] truncate text-navy-600 sm:max-w-[16rem]">{r.comment || "—"}</span>,
     },
-    { key: "created_at", header: "Sana", align: "right", render: (r) => fmtDate(r.created_at) },
+    { key: "created_at", header: "Sana", align: "right", hideOnMobile: true, render: (r) => fmtDate(r.created_at) },
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 sm:space-y-8">
       <PageHeader
         title="Boshqaruv paneli"
         subtitle="Do'kon ko'rsatkichlari, savdo dinamikasi va so'nggi faoliyat"
@@ -181,7 +217,7 @@ export default function DashboardPage() {
           <Loading />
         </Card>
       ) : (
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-5 xl:grid-cols-4">
           <KpiCard label="Bugungi savdo" value={money(o?.today_sales)} delta={d.today_sales_pct} icon={<Banknote className="size-5" />} accent />
           <KpiCard label="Oylik savdo" value={money(o?.month_sales)} delta={d.month_sales_pct} icon={<TrendingUp className="size-5" />} />
           <KpiCard label="Buyurtmalar (oy)" value={num(o?.orders_month)} delta={d.orders_pct} icon={<ClipboardList className="size-5" />} />
@@ -198,12 +234,14 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* ---- charts row 1 ---- */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+      {/* ---- charts row 1 : hero sales + status ---- */}
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-3">
+        <div className="animate-rise lg:col-span-2">
           <Section
             title="Savdo dinamikasi"
             subtitle="So'nggi 30 kun"
+            icon={<Activity className="size-5" />}
+            action={<ViewAll href="/orders" label="Buyurtmalar" />}
             loading={sales.isLoading}
             error={sales.error}
             isEmpty={!sales.data?.points?.length}
@@ -211,20 +249,26 @@ export default function DashboardPage() {
             <SalesAreaChart points={sales.data?.points ?? []} />
           </Section>
         </div>
-        <Section
-          title="Buyurtmalar holati"
-          loading={status.isLoading}
-          error={status.error}
-          isEmpty={!status.data?.items?.length}
-        >
-          <StatusDonut items={status.data?.items ?? []} />
-        </Section>
+        <div className="animate-rise">
+          <Section
+            title="Buyurtmalar holati"
+            subtitle="Joriy taqsimot"
+            icon={<PieChart className="size-5" />}
+            loading={status.isLoading}
+            error={status.error}
+            isEmpty={!status.data?.items?.length}
+          >
+            <StatusDonut items={status.data?.items ?? []} />
+          </Section>
+        </div>
       </div>
 
       {/* ---- charts row 2 ---- */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className="grid animate-rise grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-3">
         <Section
           title="To'lov usullari"
+          subtitle="Tushum manbalari"
+          icon={<CreditCard className="size-5" />}
           loading={payments.isLoading}
           error={payments.error}
           isEmpty={!payments.data?.items?.length}
@@ -234,6 +278,8 @@ export default function DashboardPage() {
         <Section
           title="Top mahsulotlar"
           subtitle="Daromad bo'yicha"
+          icon={<Trophy className="size-5" />}
+          action={<ViewAll href="/products" />}
           loading={topProducts.isLoading}
           error={topProducts.error}
           isEmpty={!productItems.length}
@@ -243,6 +289,7 @@ export default function DashboardPage() {
         <Section
           title="Top kategoriyalar"
           subtitle="Daromad bo'yicha"
+          icon={<Layers className="size-5" />}
           loading={topCategories.isLoading}
           error={topCategories.error}
           isEmpty={!categoryItems.length}
@@ -252,12 +299,21 @@ export default function DashboardPage() {
       </div>
 
       {/* ---- tables ---- */}
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+      <div className="animate-rise space-y-4 sm:space-y-6">
+        {/* Oxirgi buyurtmalar — to'liq kenglik (6 ustun sig'ishi uchun) */}
         <Section
           title="Oxirgi buyurtmalar"
+          subtitle="So'nggi faoliyat"
+          icon={<ShoppingBag className="size-5" />}
+          action={
+            <div className="flex items-center gap-2">
+              <CountChip n={recentOrders.data?.items?.length} />
+              <ViewAll href="/orders" />
+            </div>
+          }
           loading={recentOrders.isLoading}
           error={recentOrders.error}
-          bodyClassName="pb-2"
+          bodyClassName="px-2 pb-3 pt-1 sm:px-6"
         >
           <DataTable
             columns={orderCols}
@@ -267,11 +323,21 @@ export default function DashboardPage() {
           />
         </Section>
 
+        {/* Tor jadvallar yonma-yon */}
+        <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
         <Section
           title="Yangi o'lchov so'rovlari"
+          subtitle="Rejalashtirilgan uchrashuvlar"
+          icon={<Ruler className="size-5" />}
+          action={
+            <div className="flex items-center gap-2">
+              <CountChip n={recentMeasurements.data?.items?.length} />
+              <ViewAll href="/measurements" />
+            </div>
+          }
           loading={recentMeasurements.isLoading}
           error={recentMeasurements.error}
-          bodyClassName="pb-2"
+          bodyClassName="px-2 pb-3 pt-1 sm:px-6"
         >
           <DataTable
             columns={measurementCols}
@@ -284,9 +350,16 @@ export default function DashboardPage() {
         <Section
           title="Kam qolgan mahsulotlar"
           subtitle="Qoldiq ≤ 10"
+          icon={<AlertTriangle className="size-5" />}
+          action={
+            <div className="flex items-center gap-2">
+              <CountChip n={lowStock.data?.items?.length} />
+              <ViewAll href="/products" />
+            </div>
+          }
           loading={lowStock.isLoading}
           error={lowStock.error}
-          bodyClassName="pb-2"
+          bodyClassName="px-2 pb-3 pt-1 sm:px-6"
         >
           <DataTable
             columns={lowStockCols}
@@ -295,13 +368,22 @@ export default function DashboardPage() {
             empty="Hammasi yetarli"
           />
         </Section>
+        </div>
 
+        {/* Yangi sharhlar — to'liq kenglik (uzun izoh ustuni uchun) */}
         <Section
           title="Yangi sharhlar"
           subtitle="Moderatsiya kutilmoqda"
+          icon={<Star className="size-5" />}
+          action={
+            <div className="flex items-center gap-2">
+              <CountChip n={pendingReviews.data?.items?.length} />
+              <ViewAll href="/reviews" />
+            </div>
+          }
           loading={pendingReviews.isLoading}
           error={pendingReviews.error}
-          bodyClassName="pb-2"
+          bodyClassName="px-2 pb-3 pt-1 sm:px-6"
         >
           <DataTable
             columns={reviewCols}

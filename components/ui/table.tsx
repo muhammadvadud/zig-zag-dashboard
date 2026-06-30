@@ -10,6 +10,8 @@ export interface Column<T> {
   render?: (row: T) => React.ReactNode;
   className?: string;
   align?: "left" | "right" | "center";
+  /** Hide this column on small (phone) screens to keep tables readable. */
+  hideOnMobile?: boolean;
 }
 
 export function DataTable<T>({
@@ -29,18 +31,60 @@ export function DataTable<T>({
 }) {
   if (loading) return <Loading />;
   if (!rows || rows.length === 0) return <EmptyState title={empty || "Ma'lumot yo'q"} />;
+
+  // Columns shown on phones (mobile drops anything explicitly hidden).
+  const mobileCols = columns.filter((c) => !c.hideOnMobile);
+
   return (
-    <div className="overflow-x-auto">
+    <>
+      {/* ---- Phone & tablet: each row becomes a stacked "label: value" card (no horizontal scroll) ---- */}
+      <ul className="divide-y divide-navy-50 lg:hidden">
+        {rows.map((row, i) => {
+          const [head, ...rest] = mobileCols;
+          const cell = (c: Column<T>) =>
+            c.render ? c.render(row) : ((row as Record<string, unknown>)[c.key] as React.ReactNode);
+          return (
+            <li
+              key={(rowKey ? rowKey(row, i) : i) ?? i}
+              onClick={onRowClick ? () => onRowClick(row) : undefined}
+              className={cn(
+                "flex flex-col gap-2 px-4 py-3.5 transition-colors",
+                onRowClick && "cursor-pointer active:bg-gold/[0.06]"
+              )}
+            >
+              {head && (
+                <div className="text-sm font-semibold text-navy-800">{cell(head)}</div>
+              )}
+              {rest.length > 0 && (
+                <dl className="flex flex-col gap-1.5">
+                  {rest.map((c) => (
+                    <div key={c.key} className="flex items-center justify-between gap-3">
+                      <dt className="shrink-0 text-[11px] font-semibold uppercase tracking-wide text-navy-400">
+                        {c.header}
+                      </dt>
+                      <dd className="min-w-0 text-right text-sm text-navy-700">{cell(c)}</dd>
+                    </div>
+                  ))}
+                </dl>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+
+      {/* ---- Desktop: regular table ---- */}
+      <div className="hidden overflow-x-auto lg:block">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-navy-100 bg-navy-50 text-left text-navy-400">
+          <tr className="text-left text-navy-400">
             {columns.map((c) => (
               <th
                 key={c.key}
                 className={cn(
-                  "px-4 py-2.5 text-xs font-semibold uppercase tracking-wide whitespace-nowrap",
+                  "border-b border-navy-100 px-3 py-3 text-[11px] font-semibold uppercase tracking-[0.06em] whitespace-nowrap sm:px-4",
                   c.align === "right" && "text-right",
-                  c.align === "center" && "text-center"
+                  c.align === "center" && "text-center",
+                  c.hideOnMobile && "hidden sm:table-cell"
                 )}
               >
                 {c.header}
@@ -54,7 +98,7 @@ export function DataTable<T>({
               key={(rowKey ? rowKey(row, i) : i) ?? i}
               onClick={onRowClick ? () => onRowClick(row) : undefined}
               className={cn(
-                "border-b border-navy-50 last:border-0 transition-colors hover:bg-navy-50/50",
+                "border-b border-navy-50 last:border-0 transition-colors hover:bg-gold/[0.05]",
                 onRowClick && "cursor-pointer"
               )}
             >
@@ -62,9 +106,10 @@ export function DataTable<T>({
                 <td
                   key={c.key}
                   className={cn(
-                    "px-4 py-3 text-navy-700 whitespace-nowrap",
+                    "px-3 py-3 text-navy-700 whitespace-nowrap sm:px-4 sm:py-3.5",
                     c.align === "right" && "text-right",
                     c.align === "center" && "text-center",
+                    c.hideOnMobile && "hidden sm:table-cell",
                     c.className
                   )}
                 >
@@ -75,7 +120,8 @@ export function DataTable<T>({
           ))}
         </tbody>
       </table>
-    </div>
+      </div>
+    </>
   );
 }
 

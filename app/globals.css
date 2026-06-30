@@ -34,15 +34,56 @@
     0 4px 16px -4px rgb(19 31 56 / 0.08);
 }
 
+@utility shadow-soft {
+  box-shadow:
+    0 1px 3px rgb(19 31 56 / 0.05),
+    0 10px 30px -12px rgb(19 31 56 / 0.12);
+}
+
+@utility shadow-card-hover {
+  box-shadow:
+    0 2px 6px -1px rgb(19 31 56 / 0.08),
+    0 18px 40px -14px rgb(19 31 56 / 0.18);
+}
+
+/* Smooth lift used by interactive cards */
+@utility card-lift {
+  transition:
+    box-shadow 0.22s ease,
+    transform 0.22s ease,
+    border-color 0.22s ease;
+}
+
 html,
 body {
   height: 100%;
 }
 
 body {
-  background: var(--color-cream);
+  background:
+    radial-gradient(1100px 560px at 100% -8%, rgb(201 167 105 / 0.12), transparent 58%),
+    radial-gradient(900px 520px at -8% 4%, rgb(26 42 74 / 0.06), transparent 55%),
+    var(--color-cream);
+  background-attachment: fixed;
   color: var(--color-navy-800);
   font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+@keyframes fade-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@utility animate-rise {
+  animation: fade-rise 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 ::selection {

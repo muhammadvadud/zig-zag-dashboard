@@ -23,27 +23,39 @@ export function KpiCard({
   return (
     <div
       className={cn(
-        "group relative overflow-hidden rounded-2xl border p-5 shadow-sm transition-shadow hover:shadow-md",
+        "group card-lift animate-rise relative flex flex-col overflow-hidden rounded-2xl border p-4 hover:shadow-card-hover sm:p-6",
         accent
-          ? "border-navy-700 bg-navy-900 text-cream"
-          : "border-navy-100 bg-white"
+          ? "border-navy-700 bg-gradient-to-br from-navy-800 via-navy-900 to-navy-900 text-cream shadow-card-hover"
+          : "border-navy-100/80 bg-white/95 shadow-soft hover:-translate-y-0.5"
       )}
     >
-      {accent && (
-        <span
-          aria-hidden
-          className="pointer-events-none absolute -right-10 -top-10 size-32 rounded-full bg-gold/10 blur-2xl"
-        />
-      )}
+      {/* decorative glow */}
+      <span
+        aria-hidden
+        className={cn(
+          "pointer-events-none absolute -right-12 -top-12 size-36 rounded-full blur-2xl transition-opacity",
+          accent ? "bg-gold/20" : "bg-gold/0 group-hover:bg-gold/10"
+        )}
+      />
+      {/* gold top accent line */}
+      <span
+        aria-hidden
+        className={cn(
+          "pointer-events-none absolute inset-x-0 top-0 h-px",
+          accent
+            ? "bg-gradient-to-r from-transparent via-gold/60 to-transparent"
+            : "bg-gradient-to-r from-transparent via-gold/30 to-transparent"
+        )}
+      />
 
       <div className="relative flex items-start justify-between gap-3">
         {icon && (
           <span
             className={cn(
-              "flex size-11 shrink-0 items-center justify-center rounded-xl transition-colors",
+              "flex size-9 shrink-0 items-center justify-center rounded-xl transition-colors sm:size-12",
               accent
-                ? "bg-white/10 text-gold-light"
-                : "bg-gold/15 text-gold-dark group-hover:bg-gold/25"
+                ? "bg-white/10 text-gold-light ring-1 ring-white/10"
+                : "bg-gold/12 text-gold-dark ring-1 ring-gold/15 group-hover:bg-gold/20"
             )}
           >
             {icon}
@@ -53,7 +65,7 @@ export function KpiCard({
         {hasDelta && (
           <span
             className={cn(
-              "inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-xs font-semibold",
+              "inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[11px] font-bold tracking-tight sm:px-2.5 sm:py-1 sm:text-xs",
               accent
                 ? up
                   ? "bg-green-400/15 text-green-300"
@@ -71,8 +83,8 @@ export function KpiCard({
 
       <p
         className={cn(
-          "relative mt-4 text-xs font-semibold uppercase tracking-wide",
-          accent ? "text-cream/60" : "text-navy-400"
+          "relative mt-3.5 text-[10px] font-semibold uppercase tracking-[0.1em] sm:mt-5 sm:text-[11px] sm:tracking-[0.12em]",
+          accent ? "text-cream/55" : "text-navy-400"
         )}
       >
         {label}
@@ -80,7 +92,7 @@ export function KpiCard({
 
       <p
         className={cn(
-          "relative mt-1 text-2xl font-bold tracking-tight",
+          "relative mt-1 text-xl font-bold leading-tight tracking-tight tabular-nums break-words sm:mt-1.5 sm:text-3xl sm:leading-none",
           accent ? "text-cream" : "text-navy-900"
         )}
       >
@@ -90,11 +102,11 @@ export function KpiCard({
       {hasDelta && (
         <p
           className={cn(
-            "relative mt-2 text-xs font-normal",
+            "relative mt-2 text-[11px] sm:mt-2.5 sm:text-xs",
             accent ? "text-cream/50" : "text-navy-400"
           )}
         >
-          o'tgan davrga nisbatan
+          o&apos;tgan davrga nisbatan
         </p>
       )}
     </div>

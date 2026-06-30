@@ -14,7 +14,7 @@ export function Card({
   return (
     <div
       className={cn(
-        "rounded-2xl bg-white border border-navy-100 shadow-card transition-shadow",
+        "card-lift rounded-2xl border border-navy-100/80 bg-white/95 shadow-soft backdrop-blur-sm",
         className
       )}
     >
@@ -27,16 +27,25 @@ export function CardHeader({
   title,
   subtitle,
   action,
+  icon,
 }: {
   title: string;
   subtitle?: string;
   action?: React.ReactNode;
+  icon?: React.ReactNode;
 }) {
   return (
     <div className="flex items-start justify-between gap-3 px-5 pt-5 pb-3">
-      <div className="space-y-0.5">
-        <h3 className="text-navy-800 font-semibold tracking-tight leading-tight">{title}</h3>
-        {subtitle && <p className="text-sm text-navy-400 leading-snug">{subtitle}</p>}
+      <div className="flex items-start gap-3">
+        {icon && (
+          <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl bg-gold/12 text-gold-dark ring-1 ring-gold/15">
+            {icon}
+          </span>
+        )}
+        <div className="space-y-0.5">
+          <h3 className="font-semibold leading-tight tracking-tight text-navy-800">{title}</h3>
+          {subtitle && <p className="text-sm leading-snug text-navy-400">{subtitle}</p>}
+        </div>
       </div>
       {action}
     </div>
