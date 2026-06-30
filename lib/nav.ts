@@ -18,8 +18,6 @@ export const NAV: NavGroup[] = [
     title: "FOYDALANUVCHILAR",
     items: [
       { label: "Foydalanuvchilar", href: "/users", icon: "Users" },
-      { label: "Manzillar", href: "/addresses", icon: "MapPin" },
-      { label: "OTP kodlar", href: "/otp", icon: "KeyRound" },
     ],
   },
   {

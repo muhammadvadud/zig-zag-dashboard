@@ -38,17 +38,6 @@ export default function CategoriesPage() {
 
   const columns: Column<Category>[] = [
     {
-      key: "icon",
-      header: "Ikonka",
-      render: (c) =>
-        c.icon ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={c.icon} alt="" className="size-9 rounded-lg border border-navy-100 object-cover" />
-        ) : (
-          <span className="text-navy-300">—</span>
-        ),
-    },
-    {
       key: "name",
       header: "Nomi",
       render: (c) => <span className="font-medium text-navy-800">{c.name || "—"}</span>,

@@ -11,7 +11,6 @@ export interface Category {
   slug?: string;
   sort_order?: number;
   is_active?: boolean;
-  icon?: string | null;
   image?: string | null;
 }
 
@@ -21,6 +20,31 @@ type FormState = {
   sort_order: string;
   is_active: boolean;
 };
+
+function slugify(s: string): string {
+  return s
+    .toLowerCase()
+    .replace(/['''ʻʼ`]/g, "")
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+function parseApiErrors(err: unknown): string {
+  if (!(err instanceof ApiError)) return (err as Error)?.message || "Xatolik";
+  const data = err.data as Record<string, string[] | string> | null;
+  if (!data || typeof data !== "object") return err.message;
+  const msgs: string[] = [];
+  for (const [key, val] of Object.entries(data)) {
+    const arr = Array.isArray(val) ? val : [val];
+    for (const msg of arr) {
+      msgs.push(key === "non_field_errors" || key === "detail" ? String(msg) : `${key}: ${msg}`);
+    }
+  }
+  return msgs.length ? msgs.join("\n") : err.message;
+}
 
 function initial(category?: Category | null): FormState {
   return {
@@ -43,10 +67,23 @@ export function CategoryForm({
   const isEdit = !!category;
   const notify = useToast();
   const [form, setForm] = useState<FormState>(() => initial(category));
-  const [iconFile, setIconFile] = useState<File | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [slugEdited, setSlugEdited] = useState(isEdit && !!category?.slug);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  function handleNameChange(value: string) {
+    setForm((f) => ({
+      ...f,
+      name: value,
+      slug: slugEdited ? f.slug : slugify(value),
+    }));
+  }
+
+  function handleSlugChange(value: string) {
+    setSlugEdited(true);
+    setForm((f) => ({ ...f, slug: value }));
+  }
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -61,18 +98,15 @@ export function CategoryForm({
       return;
     }
 
-    const hasFile = !!iconFile || !!imageFile;
-
     setSaving(true);
     try {
-      if (hasFile) {
+      if (imageFile) {
         const fd = new FormData();
         fd.append("name", form.name.trim());
         fd.append("slug", form.slug.trim());
         fd.append("sort_order", String(Number(form.sort_order) || 0));
         fd.append("is_active", String(form.is_active));
-        if (iconFile) fd.append("icon", iconFile);
-        if (imageFile) fd.append("image", imageFile);
+        fd.append("image", imageFile);
         if (isEdit) {
           await api(`/admin/categories/${category!.id}/`, { method: "PATCH", formData: fd });
         } else {
@@ -95,7 +129,7 @@ export function CategoryForm({
       onSaved();
       onClose();
     } catch (err) {
-      setError((err as ApiError).message || "Saqlashda xatolik");
+      setError(parseApiErrors(err));
     } finally {
       setSaving(false);
     }
@@ -104,58 +138,39 @@ export function CategoryForm({
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       {error && (
-        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700">
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700 whitespace-pre-line">
           {error}
         </div>
       )}
 
       <Field label="Nomi">
-        <Input value={form.name} onChange={(e) => set("name", e.target.value)} />
+        <Input value={form.name} onChange={(e) => handleNameChange(e.target.value)} />
       </Field>
 
-      <Field label="Slug" hint="Bo'sh qoldirsangiz avtomatik yaratiladi">
+      <Field label="Slug" hint="Nom yozilganda avtomatik to'ldiriladi">
         <Input
           value={form.slug}
-          onChange={(e) => set("slug", e.target.value)}
+          onChange={(e) => handleSlugChange(e.target.value)}
           placeholder="masalan: pardalar"
         />
       </Field>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Field label="Ikonka" hint="Ixtiyoriy">
-          {isEdit && category?.icon && !iconFile && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={category.icon}
-              alt=""
-              className="mb-2 size-14 rounded-lg border border-navy-100 object-cover"
-            />
-          )}
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setIconFile(e.target.files?.[0] ?? null)}
-            className="block w-full text-sm text-navy-600 file:mr-3 file:rounded-lg file:border-0 file:bg-navy-50 file:px-3 file:py-1.5 file:text-sm file:text-navy-700"
+      <Field label="Rasm" hint="Ixtiyoriy">
+        {isEdit && category?.image && !imageFile && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={category.image}
+            alt=""
+            className="mb-2 size-14 rounded-lg border border-navy-100 object-cover"
           />
-        </Field>
-
-        <Field label="Rasm" hint="Ixtiyoriy">
-          {isEdit && category?.image && !imageFile && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={category.image}
-              alt=""
-              className="mb-2 size-14 rounded-lg border border-navy-100 object-cover"
-            />
-          )}
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
-            className="block w-full text-sm text-navy-600 file:mr-3 file:rounded-lg file:border-0 file:bg-navy-50 file:px-3 file:py-1.5 file:text-sm file:text-navy-700"
-          />
-        </Field>
-      </div>
+        )}
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
+          className="block w-full text-sm text-navy-600 file:mr-3 file:rounded-lg file:border-0 file:bg-navy-50 file:px-3 file:py-1.5 file:text-sm file:text-navy-700"
+        />
+      </Field>
 
       <Field label="Tartib">
         <Input

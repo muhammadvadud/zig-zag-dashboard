@@ -96,6 +96,29 @@ export interface AdminBadge {
   is_active: boolean;
 }
 
+export type ProductType = "variant" | "custom" | "both";
+
+export interface ProductAttribute {
+  key: string;
+  value: string;
+}
+
+export interface ProductVariantImage {
+  id: number;
+  image: string;
+  sort_order?: number;
+}
+
+export interface ProductVariant {
+  id: number;
+  color: number | null;
+  color_name?: string;
+  color_hex?: string;
+  stock: number;
+  images: ProductVariantImage[];
+  is_active: boolean;
+}
+
 export interface AdminProduct {
   id: number;
   category: number | null;
@@ -113,6 +136,8 @@ export interface AdminProduct {
   tailor: number | null;
   badges: number[];
   badges_detail: Badge[];
+  product_type?: ProductType;
+  attributes?: ProductAttribute[];
 }
 
 export interface Tailor {

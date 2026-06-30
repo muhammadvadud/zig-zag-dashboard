@@ -6,6 +6,7 @@ import {
   AlertTriangle,
   ArrowRight,
   Banknote,
+  CalendarDays,
   ClipboardList,
   CreditCard,
   Layers,
@@ -20,6 +21,7 @@ import {
   Users,
 } from "lucide-react";
 import type { ReactNode } from "react";
+import { useState } from "react";
 
 import { useApi } from "@/lib/api";
 import type {
@@ -34,7 +36,16 @@ import type {
 } from "@/lib/types";
 import { money, num, fmtDate, pct } from "@/lib/format";
 
-import { Card, CardHeader, Loading, ErrorState, EmptyState, Badge, StatusBadge, PaymentBadge } from "@/components/ui";
+import {
+  Card,
+  CardHeader,
+  Loading,
+  ErrorState,
+  EmptyState,
+  Badge,
+  StatusBadge,
+  PaymentBadge,
+} from "@/components/ui";
 import { DataTable, type Column } from "@/components/ui/table";
 import { PageHeader } from "@/components/ui/page";
 import { KpiCard } from "@/components/dashboard/KpiCard";
@@ -42,6 +53,15 @@ import { SalesAreaChart } from "@/components/charts/SalesAreaChart";
 import { StatusDonut } from "@/components/charts/StatusDonut";
 import { PaymentsBar } from "@/components/charts/PaymentsBar";
 import { TopList, type TopListItem } from "@/components/charts/TopList";
+
+/* ---- period options ---- */
+const PERIODS = [
+  { label: "7 kun", days: 7 },
+  { label: "30 kun", days: 30 },
+  { label: "3 oy", days: 90 },
+  { label: "6 oy", days: 180 },
+  { label: "1 yil", days: 365 },
+];
 
 /* ---- response envelopes ---- */
 interface Listed<T> {
@@ -66,7 +86,7 @@ interface PendingReview {
   created_at: string;
 }
 
-/* ---- "View all" styled link for section headers ---- */
+/* ---- "View all" styled link ---- */
 function ViewAll({ href, label = "Hammasi" }: { href: string; label?: string }) {
   return (
     <Link
@@ -79,7 +99,7 @@ function ViewAll({ href, label = "Hammasi" }: { href: string; label?: string }) 
   );
 }
 
-/* ---- small count chip used in section headers ---- */
+/* ---- count chip ---- */
 function CountChip({ n }: { n?: number }) {
   if (n == null) return null;
   return (
@@ -89,7 +109,7 @@ function CountChip({ n }: { n?: number }) {
   );
 }
 
-/* ---- generic section that handles loading / error / empty ---- */
+/* ---- section wrapper ---- */
 function Section({
   title,
   subtitle,
@@ -134,14 +154,18 @@ function Section({
 }
 
 export default function DashboardPage() {
-  const overview = useApi<Overview>("/admin/stats/overview/");
-  const sales = useApi<SalesResp>("/admin/stats/sales/?days=30");
+  const [days, setDays] = useState(30);
+
+  const overview = useApi<Overview>(`/admin/stats/overview/?days=${days}`);
+  const sales = useApi<SalesResp>(`/admin/stats/sales/?days=${days}`);
   const status = useApi<Listed<StatusSlice>>("/admin/stats/orders-by-status/");
   const payments = useApi<Listed<PaymentSlice>>("/admin/stats/payments/");
-  const topProducts = useApi<Listed<TopProduct>>("/admin/stats/top-products/?limit=8");
-  const topCategories = useApi<Listed<TopCategory>>("/admin/stats/top-categories/");
+  const topProducts = useApi<Listed<TopProduct>>(`/admin/stats/top-products/?limit=8&days=${days}`);
+  const topCategories = useApi<Listed<TopCategory>>(`/admin/stats/top-categories/?days=${days}`);
   const recentOrders = useApi<Listed<RecentOrder>>("/admin/stats/recent-orders/?limit=8");
-  const recentMeasurements = useApi<Listed<RecentMeasurement>>("/admin/stats/recent-measurements/?limit=6");
+  const recentMeasurements = useApi<Listed<RecentMeasurement>>(
+    "/admin/stats/recent-measurements/?limit=6"
+  );
   const lowStock = useApi<Listed<LowStockItem>>("/admin/stats/low-stock/?threshold=10");
   const pendingReviews = useApi<Listed<PendingReview>>("/admin/stats/pending-reviews/?limit=6");
 
@@ -163,51 +187,130 @@ export default function DashboardPage() {
 
   /* ---- table columns ---- */
   const orderCols: Column<RecentOrder>[] = [
-    { key: "order_number", header: "Raqam", render: (r) => <span className="font-medium text-navy-800">{r.order_number}</span> },
+    {
+      key: "order_number",
+      header: "Raqam",
+      render: (r) => (
+        <Link
+          href={`/orders/${r.order_number}`}
+          className="font-medium text-navy-800 hover:text-gold-dark"
+        >
+          {r.order_number}
+        </Link>
+      ),
+    },
     { key: "customer", header: "Mijoz" },
     { key: "status", header: "Holat", render: (r) => <StatusBadge status={r.status} /> },
-    { key: "payment_status", header: "To'lov", hideOnMobile: true, render: (r) => <PaymentBadge status={r.payment_status} /> },
+    {
+      key: "payment_status",
+      header: "To'lov",
+      hideOnMobile: true,
+      render: (r) => <PaymentBadge status={r.payment_status} />,
+    },
     { key: "total", header: "Summa", align: "right", render: (r) => money(r.total) },
-    { key: "created_at", header: "Sana", align: "right", hideOnMobile: true, render: (r) => fmtDate(r.created_at) },
+    {
+      key: "created_at",
+      header: "Sana",
+      align: "right",
+      hideOnMobile: true,
+      render: (r) => fmtDate(r.created_at),
+    },
   ];
 
   const measurementCols: Column<RecentMeasurement>[] = [
-    { key: "customer", header: "Mijoz", render: (r) => <span className="font-medium text-navy-800">{r.customer}</span> },
+    {
+      key: "customer",
+      header: "Mijoz",
+      render: (r) => <span className="font-medium text-navy-800">{r.customer}</span>,
+    },
     { key: "preferred_date", header: "Sana", render: (r) => fmtDate(r.preferred_date) },
     { key: "time_slot", header: "Vaqt", hideOnMobile: true, render: (r) => r.time_slot || "—" },
-    { key: "status", header: "Holat", align: "right", render: (r) => <Badge color="navy">{r.status}</Badge> },
+    {
+      key: "status",
+      header: "Holat",
+      align: "right",
+      render: (r) => <Badge color="navy">{r.status}</Badge>,
+    },
   ];
 
   const lowStockCols: Column<LowStockItem>[] = [
-    { key: "name", header: "Mahsulot", render: (r) => <span className="font-medium text-navy-800">{r.name}</span> },
+    {
+      key: "name",
+      header: "Mahsulot",
+      render: (r) => (
+        <Link href={`/products/${r.slug}/edit`} className="font-medium text-navy-800 hover:text-gold-dark">
+          {r.name}
+        </Link>
+      ),
+    },
     {
       key: "stock",
       header: "Qoldiq",
       align: "right",
       render: (r) => (
-        <Badge color={r.stock <= 0 ? "red" : r.stock <= 5 ? "amber" : "gold"}>{num(r.stock)} dona</Badge>
+        <Badge color={r.stock <= 0 ? "red" : r.stock <= 5 ? "amber" : "gold"}>
+          {num(r.stock)} dona
+        </Badge>
       ),
     },
   ];
 
   const reviewCols: Column<PendingReview>[] = [
-    { key: "product", header: "Mahsulot", render: (r) => <span className="font-medium text-navy-800">{r.product}</span> },
+    {
+      key: "product",
+      header: "Mahsulot",
+      render: (r) => <span className="font-medium text-navy-800">{r.product}</span>,
+    },
     { key: "user_name", header: "Mijoz", hideOnMobile: true },
-    { key: "rating", header: "Baho", align: "center", render: (r) => <Badge color="gold">{r.rating} ★</Badge> },
+    {
+      key: "rating",
+      header: "Baho",
+      align: "center",
+      render: (r) => <Badge color="gold">{r.rating} ★</Badge>,
+    },
     {
       key: "comment",
       header: "Izoh",
-      render: (r) => <span className="block max-w-[10rem] truncate text-navy-600 sm:max-w-[16rem]">{r.comment || "—"}</span>,
+      render: (r) => (
+        <span className="block max-w-[10rem] truncate text-navy-600 sm:max-w-[16rem]">
+          {r.comment || "—"}
+        </span>
+      ),
     },
-    { key: "created_at", header: "Sana", align: "right", hideOnMobile: true, render: (r) => fmtDate(r.created_at) },
+    {
+      key: "created_at",
+      header: "Sana",
+      align: "right",
+      hideOnMobile: true,
+      render: (r) => fmtDate(r.created_at),
+    },
   ];
 
   return (
     <div className="space-y-5 sm:space-y-8">
-      <PageHeader
-        title="Boshqaruv paneli"
-        subtitle="Do'kon ko'rsatkichlari, savdo dinamikasi va so'nggi faoliyat"
-      />
+      {/* ---- header + period filter ---- */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <PageHeader
+          title="Boshqaruv paneli"
+          subtitle="Do'kon ko'rsatkichlari, savdo dinamikasi va so'nggi faoliyat"
+        />
+        <div className="flex items-center gap-1.5 rounded-xl border border-navy-100 bg-white p-1 shadow-sm shrink-0">
+          <CalendarDays className="ml-2 size-4 text-navy-400" />
+          {PERIODS.map((p) => (
+            <button
+              key={p.days}
+              onClick={() => setDays(p.days)}
+              className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-colors ${
+                days === p.days
+                  ? "bg-gold text-navy-900"
+                  : "text-navy-500 hover:bg-navy-50 hover:text-navy-800"
+              }`}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* ---- KPI row ---- */}
       {overview.error ? (
@@ -217,14 +320,48 @@ export default function DashboardPage() {
           <Loading />
         </Card>
       ) : (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-5 xl:grid-cols-4">
-          <KpiCard label="Bugungi savdo" value={money(o?.today_sales)} delta={d.today_sales_pct} icon={<Banknote className="size-5" />} accent />
-          <KpiCard label="Oylik savdo" value={money(o?.month_sales)} delta={d.month_sales_pct} icon={<TrendingUp className="size-5" />} />
-          <KpiCard label="Buyurtmalar (oy)" value={num(o?.orders_month)} delta={d.orders_pct} icon={<ClipboardList className="size-5" />} />
-          <KpiCard label="O'rtacha chek" value={money(o?.avg_check)} delta={d.avg_check_pct} icon={<Receipt className="size-5" />} />
-          <KpiCard label="Yangi mijozlar" value={num(o?.new_customers_month)} delta={d.new_customers_pct} icon={<UserPlus className="size-5" />} />
-          <KpiCard label="Kutilayotgan buyurtma" value={num(o?.pending_orders)} icon={<ClipboardList className="size-5" />} />
-          <KpiCard label="O'lchov so'rovlari" value={num(o?.measurement_requests)} icon={<Ruler className="size-5" />} />
+        <div className="grid grid-cols-2 gap-3 sm:gap-5 xl:grid-cols-4">
+          <KpiCard
+            label="Bugungi savdo"
+            value={money(o?.today_sales)}
+            delta={d.today_sales_pct}
+            icon={<Banknote className="size-5" />}
+            accent
+          />
+          <KpiCard
+            label="Oylik savdo"
+            value={money(o?.month_sales)}
+            delta={d.month_sales_pct}
+            icon={<TrendingUp className="size-5" />}
+          />
+          <KpiCard
+            label="Buyurtmalar (oy)"
+            value={num(o?.orders_month)}
+            delta={d.orders_pct}
+            icon={<ClipboardList className="size-5" />}
+          />
+          <KpiCard
+            label="O'rtacha chek"
+            value={money(o?.avg_check)}
+            delta={d.avg_check_pct}
+            icon={<Receipt className="size-5" />}
+          />
+          <KpiCard
+            label="Yangi mijozlar"
+            value={num(o?.new_customers_month)}
+            delta={d.new_customers_pct}
+            icon={<UserPlus className="size-5" />}
+          />
+          <KpiCard
+            label="Kutilayotgan buyurtma"
+            value={num(o?.pending_orders)}
+            icon={<ClipboardList className="size-5" />}
+          />
+          <KpiCard
+            label="O'lchov so'rovlari"
+            value={num(o?.measurement_requests)}
+            icon={<Ruler className="size-5" />}
+          />
           <KpiCard
             label="Konversiya"
             value={o?.conversion != null ? pct(o.conversion) : "—"}
@@ -234,36 +371,22 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* ---- charts row 1 : hero sales + status ---- */}
-      <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-3">
-        <div className="animate-rise lg:col-span-2">
-          <Section
-            title="Savdo dinamikasi"
-            subtitle="So'nggi 30 kun"
-            icon={<Activity className="size-5" />}
-            action={<ViewAll href="/orders" label="Buyurtmalar" />}
-            loading={sales.isLoading}
-            error={sales.error}
-            isEmpty={!sales.data?.points?.length}
-          >
-            <SalesAreaChart points={sales.data?.points ?? []} />
-          </Section>
-        </div>
-        <div className="animate-rise">
-          <Section
-            title="Buyurtmalar holati"
-            subtitle="Joriy taqsimot"
-            icon={<PieChart className="size-5" />}
-            loading={status.isLoading}
-            error={status.error}
-            isEmpty={!status.data?.items?.length}
-          >
-            <StatusDonut items={status.data?.items ?? []} />
-          </Section>
-        </div>
+      {/* ---- chart row 1: Savdo dinamikasi (full) ---- */}
+      <div className="animate-rise">
+        <Section
+          title="Savdo dinamikasi"
+          subtitle={`So'nggi ${days} kun`}
+          icon={<Activity className="size-5" />}
+          action={<ViewAll href="/orders" label="Buyurtmalar" />}
+          loading={sales.isLoading}
+          error={sales.error}
+          isEmpty={!sales.data?.points?.length}
+        >
+          <SalesAreaChart points={sales.data?.points ?? []} />
+        </Section>
       </div>
 
-      {/* ---- charts row 2 ---- */}
+      {/* ---- chart row 2: To'lov usullari + Top mahsulotlar + Top kategoriyalar ---- */}
       <div className="grid animate-rise grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-3">
         <Section
           title="To'lov usullari"
@@ -277,9 +400,9 @@ export default function DashboardPage() {
         </Section>
         <Section
           title="Top mahsulotlar"
-          subtitle="Daromad bo'yicha"
+          subtitle={`Daromad bo'yicha (${days} kun)`}
           icon={<Trophy className="size-5" />}
-          action={<ViewAll href="/products" />}
+          action={<ViewAll href="/dashboard/top-products" />}
           loading={topProducts.isLoading}
           error={topProducts.error}
           isEmpty={!productItems.length}
@@ -288,8 +411,9 @@ export default function DashboardPage() {
         </Section>
         <Section
           title="Top kategoriyalar"
-          subtitle="Daromad bo'yicha"
+          subtitle={`Daromad bo'yicha (${days} kun)`}
           icon={<Layers className="size-5" />}
+          action={<ViewAll href="/dashboard/top-categories" />}
           loading={topCategories.isLoading}
           error={topCategories.error}
           isEmpty={!categoryItems.length}
@@ -300,7 +424,7 @@ export default function DashboardPage() {
 
       {/* ---- tables ---- */}
       <div className="animate-rise space-y-4 sm:space-y-6">
-        {/* Oxirgi buyurtmalar — to'liq kenglik (6 ustun sig'ishi uchun) */}
+        {/* Oxirgi buyurtmalar — full width */}
         <Section
           title="Oxirgi buyurtmalar"
           subtitle="So'nggi faoliyat"
@@ -323,54 +447,67 @@ export default function DashboardPage() {
           />
         </Section>
 
-        {/* Tor jadvallar yonma-yon */}
-        <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
-        <Section
-          title="Yangi o'lchov so'rovlari"
-          subtitle="Rejalashtirilgan uchrashuvlar"
-          icon={<Ruler className="size-5" />}
-          action={
-            <div className="flex items-center gap-2">
-              <CountChip n={recentMeasurements.data?.items?.length} />
-              <ViewAll href="/measurements" />
-            </div>
-          }
-          loading={recentMeasurements.isLoading}
-          error={recentMeasurements.error}
-          bodyClassName="px-2 pb-3 pt-1 sm:px-6"
-        >
-          <DataTable
-            columns={measurementCols}
-            rows={recentMeasurements.data?.items}
-            rowKey={(r) => r.id}
-            empty="So'rovlar yo'q"
-          />
-        </Section>
+        {/* Tor jadvallar + Buyurtmalar holati — 3 ustun */}
+        <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-3">
+          <Section
+            title="Yangi o'lchov so'rovlari"
+            subtitle="Rejalashtirilgan uchrashuvlar"
+            icon={<Ruler className="size-5" />}
+            action={
+              <div className="flex items-center gap-2">
+                <CountChip n={recentMeasurements.data?.items?.length} />
+                <ViewAll href="/measurements" />
+              </div>
+            }
+            loading={recentMeasurements.isLoading}
+            error={recentMeasurements.error}
+            bodyClassName="px-2 pb-3 pt-1 sm:px-6"
+          >
+            <DataTable
+              columns={measurementCols}
+              rows={recentMeasurements.data?.items}
+              rowKey={(r) => r.id}
+              empty="So'rovlar yo'q"
+            />
+          </Section>
 
-        <Section
-          title="Kam qolgan mahsulotlar"
-          subtitle="Qoldiq ≤ 10"
-          icon={<AlertTriangle className="size-5" />}
-          action={
-            <div className="flex items-center gap-2">
-              <CountChip n={lowStock.data?.items?.length} />
-              <ViewAll href="/products" />
-            </div>
-          }
-          loading={lowStock.isLoading}
-          error={lowStock.error}
-          bodyClassName="px-2 pb-3 pt-1 sm:px-6"
-        >
-          <DataTable
-            columns={lowStockCols}
-            rows={lowStock.data?.items}
-            rowKey={(r) => r.id}
-            empty="Hammasi yetarli"
-          />
-        </Section>
+          <Section
+            title="Kam qolgan mahsulotlar"
+            subtitle="Qoldiq ≤ 10"
+            icon={<AlertTriangle className="size-5" />}
+            action={
+              <div className="flex items-center gap-2">
+                <CountChip n={lowStock.data?.items?.length} />
+                <ViewAll href="/dashboard/low-stock" />
+              </div>
+            }
+            loading={lowStock.isLoading}
+            error={lowStock.error}
+            bodyClassName="px-2 pb-3 pt-1 sm:px-6"
+          >
+            <DataTable
+              columns={lowStockCols}
+              rows={lowStock.data?.items}
+              rowKey={(r) => r.id}
+              empty="Hammasi yetarli"
+            />
+          </Section>
+
+          {/* Buyurtmalar holati — pastga tushirildi */}
+          <Section
+            title="Buyurtmalar holati"
+            subtitle="Joriy taqsimot"
+            icon={<PieChart className="size-5" />}
+            action={<ViewAll href="/orders" label="Buyurtmalar" />}
+            loading={status.isLoading}
+            error={status.error}
+            isEmpty={!status.data?.items?.length}
+          >
+            <StatusDonut items={status.data?.items ?? []} />
+          </Section>
         </div>
 
-        {/* Yangi sharhlar — to'liq kenglik (uzun izoh ustuni uchun) */}
+        {/* Yangi sharhlar — full width */}
         <Section
           title="Yangi sharhlar"
           subtitle="Moderatsiya kutilmoqda"
