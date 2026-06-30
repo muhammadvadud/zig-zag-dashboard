@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { useApi, api, ApiError } from "@/lib/api";
 import type { AdminProduct, AdminTailor, Category, Paginated } from "@/lib/types";
@@ -10,23 +12,21 @@ import { DataTable, Pagination, type Column } from "@/components/ui/table";
 import { PageHeader, SearchInput } from "@/components/ui/page";
 import { Modal } from "@/components/ui/modal";
 import { useToast } from "@/components/ui/toast";
-import { ProductForm } from "./ProductForm";
 
 const PAGE_SIZE = 20;
 
 export default function ProductsPage() {
   const notify = useToast();
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
-  const [createOpen, setCreateOpen] = useState(false);
-  const [editing, setEditing] = useState<AdminProduct | null>(null);
   const [deleting, setDeleting] = useState<AdminProduct | null>(null);
   const [deletingBusy, setDeletingBusy] = useState(false);
 
   const listKey = `/admin/products/?search=${encodeURIComponent(search)}&page=${page}`;
   const { data, error, isLoading, mutate } = useApi<Paginated<AdminProduct>>(listKey);
 
-  const { data: catData } = useApi<Category[] | Paginated<Category>>("/categories/");
+  const { data: catData } = useApi<Category[] | Paginated<Category>>("/admin/categories/");
   const { data: tailorData } = useApi<Paginated<AdminTailor>>("/admin/tailors/?page=1");
 
   const categories: Category[] = useMemo(
@@ -105,10 +105,24 @@ export default function ProductsPage() {
         p.stock < 10 ? <Badge color="red">{p.stock}</Badge> : <span>{p.stock}</span>,
     },
     {
-      key: "is_new",
-      header: "Yangi",
+      key: "badges",
+      header: "Nishonlar",
       render: (p) =>
-        p.is_new ? <Badge color="gold">Yangi</Badge> : <span className="text-navy-300">—</span>,
+        p.badges_detail?.length ? (
+          <div className="flex flex-wrap gap-1">
+            {p.badges_detail.map((b) => (
+              <span
+                key={b.id}
+                className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold text-white"
+                style={{ backgroundColor: b.color }}
+              >
+                {b.name}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <span className="text-navy-300">—</span>
+        ),
     },
     {
       key: "is_active",
@@ -122,13 +136,13 @@ export default function ProductsPage() {
       align: "right",
       render: (p) => (
         <div className="flex justify-end gap-1">
-          <button
-            onClick={() => setEditing(p)}
+          <Link
+            href={`/products/${p.slug}/edit`}
             className="rounded-lg p-1.5 text-navy-500 hover:bg-navy-50"
             title="Tahrirlash"
           >
             <Pencil className="size-4" />
-          </button>
+          </Link>
           <button
             onClick={() => setDeleting(p)}
             className="rounded-lg p-1.5 text-red-500 hover:bg-red-50"
@@ -146,7 +160,7 @@ export default function ProductsPage() {
       <PageHeader
         title="Mahsulotlar"
         actions={
-          <Button variant="gold" onClick={() => setCreateOpen(true)}>
+          <Button variant="gold" onClick={() => router.push("/products/new")}>
             <Plus className="size-4" /> Yangi mahsulot
           </Button>
         }
@@ -186,37 +200,6 @@ export default function ProductsPage() {
           </>
         )}
       </Card>
-
-      <Modal
-        open={createOpen}
-        onClose={() => setCreateOpen(false)}
-        title="Yangi mahsulot"
-        size="lg"
-      >
-        <ProductForm
-          categories={categories}
-          tailors={tailors}
-          onClose={() => setCreateOpen(false)}
-          onSaved={() => mutate()}
-        />
-      </Modal>
-
-      <Modal
-        open={!!editing}
-        onClose={() => setEditing(null)}
-        title="Mahsulotni tahrirlash"
-        size="lg"
-      >
-        {editing && (
-          <ProductForm
-            product={editing}
-            categories={categories}
-            tailors={tailors}
-            onClose={() => setEditing(null)}
-            onSaved={() => mutate()}
-          />
-        )}
-      </Modal>
 
       <Modal
         open={!!deleting}

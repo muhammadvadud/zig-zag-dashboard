@@ -79,6 +79,23 @@ export interface OrderDetail extends AdminOrderRow {
   items: OrderItem[];
 }
 
+/** Mahsulotga biriktiriladigan nishon (Yangi, Chegirma, Top, ...). */
+export interface Badge {
+  id: number;
+  name: string;
+  color: string;
+}
+
+/** Admin (yozish/o'qish) nishon — bilingual nom + rang. */
+export interface AdminBadge {
+  id: number;
+  name_uz: string;
+  name_ru: string;
+  color: string;
+  sort_order: number;
+  is_active: boolean;
+}
+
 export interface AdminProduct {
   id: number;
   category: number | null;
@@ -91,10 +108,11 @@ export interface AdminProduct {
   base_price: string;
   price_per_m2: string;
   discount_percent: number;
-  is_new: boolean;
   is_active: boolean;
   stock: number;
   tailor: number | null;
+  badges: number[];
+  badges_detail: Badge[];
 }
 
 export interface Tailor {

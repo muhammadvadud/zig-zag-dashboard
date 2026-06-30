@@ -31,6 +31,7 @@ export const NAV: NavGroup[] = [
       { label: "Chevarlar", href: "/tailors", icon: "Scissors" },
       { label: "Mahsulotlar", href: "/products", icon: "Package" },
       { label: "Ranglar", href: "/colors", icon: "Paintbrush" },
+      { label: "Nishonlar", href: "/badges", icon: "BadgeCheck" },
       { label: "Sharhlar", href: "/reviews", icon: "Star" },
       { label: "Kolleksiyalar", href: "/collections", icon: "Layers" },
       { label: "Bannerlar", href: "/banners", icon: "Image" },
