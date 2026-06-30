@@ -103,6 +103,31 @@ export interface ProductAttribute {
   value: string;
 }
 
+/** Rang (global ro'yxat). */
+export interface Color {
+  id: number;
+  name: string;
+  hex: string;
+}
+
+/** Uslub (Style) — mahsulotga biriktiriladi. */
+export interface Style {
+  id: number;
+  slug: string;
+  name: string;
+  is_active?: boolean;
+  sort_order?: number;
+}
+
+/** Xona (Room) — mahsulotga biriktiriladi. */
+export interface Room {
+  id: number;
+  slug: string;
+  name: string;
+  is_active?: boolean;
+  sort_order?: number;
+}
+
 export interface ProductVariant {
   id: number;
   name: string;
@@ -119,7 +144,7 @@ export interface ProductImage {
   image_url: string;
   is_main: boolean;
   sort_order: number;
-  variant: number | null;
+  color: number | null;
 }
 
 export interface AdminProduct {
@@ -139,6 +164,10 @@ export interface AdminProduct {
   tailor: number | null;
   badges: number[];
   badges_detail: Badge[];
+  styles?: number[];
+  rooms?: number[];
+  colors?: number[];
+  colors_detail?: Color[];
   product_type?: ProductType;
   attributes?: ProductAttribute[];
 }

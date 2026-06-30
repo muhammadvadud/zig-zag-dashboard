@@ -20,6 +20,9 @@ import {
   ImagePlus,
   Star,
   Ruler,
+  Palette,
+  Sofa,
+  Sparkles,
 } from "lucide-react";
 
 import { api, useApi, ApiError } from "@/lib/api";
@@ -33,6 +36,9 @@ import type {
   ProductImage,
   ProductAttribute,
   ProductType,
+  Color,
+  Style,
+  Room,
 } from "@/lib/types";
 import { Button, Field, Input, Textarea, Select, Card } from "@/components/ui";
 import { useToast } from "@/components/ui/toast";
@@ -70,6 +76,9 @@ type FormState = {
   stock: string;
   is_active: boolean;
   badges: number[];
+  styles: number[];
+  rooms: number[];
+  colors: number[];
   product_type: ProductType;
   attributes: ProductAttribute[];
 };
@@ -89,7 +98,7 @@ interface LocalImage {
   _id: string;
   file: File;
   is_main: boolean;
-  variantId: string; // empty = not linked
+  colorId: string; // empty = not linked to a color
 }
 
 function mkVariant(): LocalVariant {
@@ -118,6 +127,9 @@ function initial(product?: AdminProduct | null): FormState {
     stock: product ? String(product.stock ?? 0) : "0",
     is_active: product?.is_active ?? true,
     badges: product?.badges ?? [],
+    styles: product?.styles ?? [],
+    rooms: product?.rooms ?? [],
+    colors: product?.colors ?? [],
     product_type: product?.product_type ?? "variant",
     attributes: product?.attributes ?? [],
   };
@@ -217,9 +229,15 @@ export function ProductForm({ product }: { product?: AdminProduct | null }) {
   const { data: catData } = useApi<Category[] | Paginated<Category>>("/admin/categories/");
   const { data: tailorData } = useApi<Paginated<AdminTailor>>("/admin/tailors/?page=1");
   const { data: badgeData } = useApi<unknown>("/admin/badges/", { dedupingInterval: 0, revalidateOnFocus: true });
+  const { data: colorData, mutate: mutateColors } = useApi<unknown>("/admin/colors/", { dedupingInterval: 0 });
+  const { data: styleData } = useApi<unknown>("/admin/styles/");
+  const { data: roomData } = useApi<unknown>("/admin/rooms/");
   const categories: Category[] = Array.isArray(catData) ? catData : catData?.results ?? [];
   const tailors: AdminTailor[] = tailorData?.results ?? [];
   const badges: AdminBadge[] = asList<AdminBadge>(badgeData);
+  const colors: Color[] = asList<Color>(colorData);
+  const styles: Style[] = asList<Style>(styleData);
+  const rooms: Room[] = asList<Room>(roomData);
 
   /* --- edit mode: server variants & images --- */
   const { data: serverVariantsRaw, mutate: mutateVariants } = useApi<ProductVariant[] | Paginated<ProductVariant>>(
@@ -240,6 +258,11 @@ export function ProductForm({ product }: { product?: AdminProduct | null }) {
   const [localVariants, setLocalVariants] = useState<LocalVariant[]>([]);
   const [localImages, setLocalImages] = useState<LocalImage[]>([]);
 
+  /* --- inline new-color state --- */
+  const [newColorName, setNewColorName] = useState("");
+  const [newColorHex, setNewColorHex] = useState("#c9a769");
+  const [creatingColor, setCreatingColor] = useState(false);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   /* --- attribute defaults --- */
@@ -258,6 +281,34 @@ export function ProductForm({ product }: { product?: AdminProduct | null }) {
       ...f,
       badges: f.badges.includes(id) ? f.badges.filter((b) => b !== id) : [...f.badges, id],
     }));
+  }
+
+  function toggleIn(key: "styles" | "rooms" | "colors", id: number) {
+    setForm((f) => ({
+      ...f,
+      [key]: f[key].includes(id) ? f[key].filter((x) => x !== id) : [...f[key], id],
+    }));
+  }
+
+  async function createColor() {
+    const name = newColorName.trim();
+    if (!name) return;
+    setCreatingColor(true);
+    try {
+      const created = await api<Color>("/admin/colors/", {
+        method: "POST",
+        body: { name, hex: newColorHex },
+      });
+      await mutateColors();
+      setForm((f) => ({ ...f, colors: [...f.colors, created.id] }));
+      setNewColorName("");
+      setNewColorHex("#c9a769");
+      notify("Rang qo'shildi", "success");
+    } catch (err) {
+      notify(parseApiErrors(err), "error");
+    } finally {
+      setCreatingColor(false);
+    }
   }
 
   function addAttr(key = "", val = "") {
@@ -294,7 +345,7 @@ export function ProductForm({ product }: { product?: AdminProduct | null }) {
         _id: Math.random().toString(36).slice(2),
         file,
         is_main: !hasMain && idx === 0 && prev.length === 0,
-        variantId: "",
+        colorId: "",
       })),
     ]);
   }
@@ -341,7 +392,7 @@ export function ProductForm({ product }: { product?: AdminProduct | null }) {
       const fd = new FormData();
       fd.append("image", li.file);
       fd.append("is_main", String(li.is_main));
-      if (li.variantId) fd.append("variant", li.variantId);
+      if (li.colorId) fd.append("color", li.colorId);
       try {
         await api(`/admin/products/${slug}/images/`, { method: "POST", formData: fd });
       } catch { /* silent */ }
@@ -379,6 +430,9 @@ export function ProductForm({ product }: { product?: AdminProduct | null }) {
       stock: Number(form.stock) || 0,
       is_active: form.is_active,
       badges: form.badges,
+      styles: form.styles,
+      rooms: form.rooms,
+      colors: form.colors,
       product_type: form.product_type,
       attributes: form.attributes.filter((a) => a.key.trim()),
     };
@@ -540,6 +594,45 @@ export function ProductForm({ product }: { product?: AdminProduct | null }) {
             </Section>
           )}
 
+          {/* === Ranglar === */}
+          <Section icon={<Palette className="size-5" />} title="Ranglar" desc="Mahsulot ranglari — rasmlar shu ranglarga ulanadi">
+            <div className="space-y-4">
+              {colors.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {colors.map((c) => {
+                    const active = form.colors.includes(c.id);
+                    return (
+                      <button key={c.id} type="button" onClick={() => toggleIn("colors", c.id)}
+                        className={cn("inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium transition-all",
+                          active ? "border-gold bg-gold/10 text-navy-900 ring-1 ring-gold/40" : "border-navy-200 bg-white text-navy-600 hover:border-navy-300")}>
+                        <span className="size-4 rounded-full border border-black/10" style={{ backgroundColor: c.hex }} />
+                        {c.name}
+                        {active && <Check className="size-3.5 text-gold-dark" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-sm text-navy-400">Hali rang yo&apos;q. Quyida yangi rang qo&apos;shing.</p>
+              )}
+
+              {/* inline new color */}
+              <div className="flex flex-wrap items-end gap-2 rounded-xl border border-dashed border-navy-200 p-3">
+                <Field label="Yangi rang nomi" className="flex-1 min-w-[8rem]">
+                  <Input value={newColorName} onChange={(e) => setNewColorName(e.target.value)} placeholder="Masalan: Bej" />
+                </Field>
+                <Field label="Rang">
+                  <input type="color" value={newColorHex} onChange={(e) => setNewColorHex(e.target.value)}
+                    className="h-10 w-14 cursor-pointer rounded-lg border border-navy-200 bg-white p-1" />
+                </Field>
+                <Button type="button" variant="outline" loading={creatingColor}
+                  onClick={createColor} disabled={!newColorName.trim()}>
+                  <Plus className="size-4" /> Rang qo&apos;shish
+                </Button>
+              </div>
+            </div>
+          </Section>
+
           {/* === Rasmlar === */}
           <Section icon={<ImagePlus className="size-5" />} title="Rasmlar" desc="Mahsulot rasmlari; ★ belgili — asosiy rasm">
             <div className="space-y-4">
@@ -567,23 +660,18 @@ export function ProductForm({ product }: { product?: AdminProduct | null }) {
                 </div>
               )}
 
-              {/* variant link for local images */}
-              {localImages.length > 0 && serverVariants.length + localVariants.length > 0 && (
+              {/* color link for local images */}
+              {localImages.length > 0 && form.colors.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-xs font-medium text-navy-500">Rasmlarni varianta ulash (ixtiyoriy):</p>
+                  <p className="text-xs font-medium text-navy-500">Rasmlarni rangga ulash (ixtiyoriy):</p>
                   {localImages.map((li) => (
                     <div key={li._id} className="flex items-center gap-2 text-sm">
                       <span className="w-32 truncate text-navy-400">{li.file.name}</span>
-                      <Select className="flex-1 text-sm" value={li.variantId}
-                        onChange={(e) => setLocalImages((v) => v.map((i) => i._id === li._id ? { ...i, variantId: e.target.value } : i))}>
-                        <option value="">— Variantsiz —</option>
-                        {serverVariants.map((sv) => (
-                          <option key={sv.id} value={sv.id}>
-                            {sv.label || sv.name || `Variant #${sv.id}`}
-                          </option>
-                        ))}
-                        {localVariants.map((lv) => (
-                          <option key={lv._id} value="">[Saqlangandan keyin ulang]</option>
+                      <Select className="flex-1 text-sm" value={li.colorId}
+                        onChange={(e) => setLocalImages((v) => v.map((i) => i._id === li._id ? { ...i, colorId: e.target.value } : i))}>
+                        <option value="">— Rangsiz —</option>
+                        {colors.filter((c) => form.colors.includes(c.id)).map((c) => (
+                          <option key={c.id} value={c.id}>{c.name}</option>
                         ))}
                       </Select>
                     </div>
@@ -648,6 +736,48 @@ export function ProductForm({ product }: { product?: AdminProduct | null }) {
                 ))}
               </div>
             </div>
+          </Section>
+
+          {/* === Uslublar (Styles) === */}
+          <Section icon={<Sparkles className="size-5" />} title="Uslublar" desc="Mahsulot qaysi uslublarga mos">
+            {styles.length === 0 ? (
+              <p className="text-sm text-navy-400">Hali uslub yo&apos;q.</p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {styles.map((s) => {
+                  const active = form.styles.includes(s.id);
+                  return (
+                    <button key={s.id} type="button" onClick={() => toggleIn("styles", s.id)}
+                      className={cn("inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition-all",
+                        active ? "border-gold bg-gold/10 text-navy-900 ring-1 ring-gold/40" : "border-navy-200 bg-white text-navy-600 hover:border-navy-300")}>
+                      {active && <Check className="size-3.5 text-gold-dark" />}
+                      {s.name}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </Section>
+
+          {/* === Xonalar (Rooms) === */}
+          <Section icon={<Sofa className="size-5" />} title="Xonalar" desc="Mahsulot qaysi xonalarga mos">
+            {rooms.length === 0 ? (
+              <p className="text-sm text-navy-400">Hali xona yo&apos;q.</p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {rooms.map((r) => {
+                  const active = form.rooms.includes(r.id);
+                  return (
+                    <button key={r.id} type="button" onClick={() => toggleIn("rooms", r.id)}
+                      className={cn("inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition-all",
+                        active ? "border-gold bg-gold/10 text-navy-900 ring-1 ring-gold/40" : "border-navy-200 bg-white text-navy-600 hover:border-navy-300")}>
+                      {active && <Check className="size-3.5 text-gold-dark" />}
+                      {r.name}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </Section>
         </div>
 
