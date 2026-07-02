@@ -168,7 +168,7 @@ export interface AdminProduct {
   rooms?: number[];
   colors?: number[];
   colors_detail?: Color[];
-  product_type?: ProductType;
+  size_mode?: ProductType;
   attributes?: ProductAttribute[];
 }
 

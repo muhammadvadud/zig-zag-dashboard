@@ -79,7 +79,7 @@ type FormState = {
   styles: number[];
   rooms: number[];
   colors: number[];
-  product_type: ProductType;
+  size_mode: ProductType;
   attributes: ProductAttribute[];
 };
 
@@ -130,7 +130,7 @@ function initial(product?: AdminProduct | null): FormState {
     styles: product?.styles ?? [],
     rooms: product?.rooms ?? [],
     colors: product?.colors ?? [],
-    product_type: product?.product_type ?? "variant",
+    size_mode: product?.size_mode ?? "variant",
     attributes: product?.attributes ?? [],
   };
 }
@@ -406,8 +406,8 @@ export function ProductForm({ product }: { product?: AdminProduct | null }) {
     return Math.max(0, base - (base * disc) / 100);
   }, [form.base_price, form.discount_percent]);
 
-  const showVariants = form.product_type === "variant" || form.product_type === "both";
-  const showPricePerM2 = form.product_type !== "variant";
+  const showVariants = form.size_mode === "variant" || form.size_mode === "both";
+  const showPricePerM2 = form.size_mode !== "variant";
 
   /* ---- submit ---- */
   async function onSubmit(e: React.FormEvent) {
@@ -433,7 +433,7 @@ export function ProductForm({ product }: { product?: AdminProduct | null }) {
       styles: form.styles,
       rooms: form.rooms,
       colors: form.colors,
-      product_type: form.product_type,
+      size_mode: form.size_mode,
       attributes: form.attributes.filter((a) => a.key.trim()),
     };
 
@@ -515,10 +515,10 @@ export function ProductForm({ product }: { product?: AdminProduct | null }) {
               {PRODUCT_TYPES.map((pt) => (
                 <label key={pt.value}
                   className={cn("flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 transition-colors",
-                    form.product_type === pt.value ? "border-gold bg-gold/8 ring-1 ring-gold/40" : "border-navy-100 bg-white hover:border-navy-200")}
+                    form.size_mode === pt.value ? "border-gold bg-gold/8 ring-1 ring-gold/40" : "border-navy-100 bg-white hover:border-navy-200")}
                 >
-                  <input type="radio" name="product_type" value={pt.value}
-                    checked={form.product_type === pt.value} onChange={() => set("product_type", pt.value)}
+                  <input type="radio" name="size_mode" value={pt.value}
+                    checked={form.size_mode === pt.value} onChange={() => set("size_mode", pt.value)}
                     className="accent-gold" />
                   <span>
                     <span className="block text-sm font-medium text-navy-800">{pt.label}</span>
