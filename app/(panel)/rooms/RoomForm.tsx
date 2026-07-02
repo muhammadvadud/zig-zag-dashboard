@@ -15,7 +15,6 @@ export interface Room {
 
 type FormState = {
   name: string;
-  slug: string;
   sort_order: string;
   is_active: boolean;
 };
@@ -23,7 +22,6 @@ type FormState = {
 function initial(room?: Room | null): FormState {
   return {
     name: room?.name ?? "",
-    slug: room?.slug ?? "",
     sort_order: room ? String(room.sort_order ?? 0) : "0",
     is_active: room?.is_active ?? true,
   };
@@ -59,7 +57,6 @@ export function RoomForm({
 
     const payload = {
       name: form.name.trim(),
-      slug: form.slug.trim(),
       sort_order: Number(form.sort_order) || 0,
       is_active: form.is_active,
     };
@@ -92,14 +89,6 @@ export function RoomForm({
 
       <Field label="Nomi">
         <Input value={form.name} onChange={(e) => set("name", e.target.value)} />
-      </Field>
-
-      <Field label="Slug" hint="Bo'sh qoldirsangiz avtomatik yaratiladi">
-        <Input
-          value={form.slug}
-          onChange={(e) => set("slug", e.target.value)}
-          placeholder="masalan: yotoqxona"
-        />
       </Field>
 
       <Field label="Tartib">

@@ -17,7 +17,6 @@ export interface Style {
 
 type FormState = {
   name: string;
-  slug: string;
   blurb: string;
   sort_order: string;
   is_active: boolean;
@@ -26,7 +25,6 @@ type FormState = {
 function initial(style?: Style | null): FormState {
   return {
     name: style?.name ?? "",
-    slug: style?.slug ?? "",
     blurb: style?.blurb ?? "",
     sort_order: style ? String(style.sort_order ?? 0) : "0",
     is_active: style?.is_active ?? true,
@@ -67,7 +65,6 @@ export function StyleForm({
       if (imageFile) {
         const fd = new FormData();
         fd.append("name", form.name.trim());
-        fd.append("slug", form.slug.trim());
         fd.append("blurb", form.blurb);
         fd.append("sort_order", String(Number(form.sort_order) || 0));
         fd.append("is_active", String(form.is_active));
@@ -80,7 +77,6 @@ export function StyleForm({
       } else {
         const payload = {
           name: form.name.trim(),
-          slug: form.slug.trim(),
           blurb: form.blurb,
           sort_order: Number(form.sort_order) || 0,
           is_active: form.is_active,
@@ -111,14 +107,6 @@ export function StyleForm({
 
       <Field label="Nomi">
         <Input value={form.name} onChange={(e) => set("name", e.target.value)} />
-      </Field>
-
-      <Field label="Slug" hint="Bo'sh qoldirsangiz avtomatik yaratiladi">
-        <Input
-          value={form.slug}
-          onChange={(e) => set("slug", e.target.value)}
-          placeholder="masalan: klassik"
-        />
       </Field>
 
       <Field label="Tavsif">

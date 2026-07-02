@@ -86,10 +86,10 @@ export default function ProductsPage() {
       render: (p) => (p.tailor != null ? tailorName.get(p.tailor) ?? "—" : "—"),
     },
     {
-      key: "base_price",
-      header: "Narx",
+      key: "starting_price",
+      header: "Narx (dan)",
       align: "right",
-      render: (p) => money(p.base_price),
+      render: (p) => money(p.starting_price),
     },
     {
       key: "discount_percent",

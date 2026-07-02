@@ -16,7 +16,6 @@ export interface AdminCollection {
 
 type FormState = {
   title: string;
-  slug: string;
   sort_order: string;
   is_active: boolean;
 };
@@ -24,7 +23,6 @@ type FormState = {
 function initial(c?: AdminCollection | null): FormState {
   return {
     title: c?.title ?? "",
-    slug: c?.slug ?? "",
     sort_order: c ? String(c.sort_order ?? 0) : "0",
     is_active: c?.is_active ?? true,
   };
@@ -64,7 +62,6 @@ export function CollectionForm({
       if (file) {
         const fd = new FormData();
         fd.append("title", form.title.trim());
-        if (form.slug.trim()) fd.append("slug", form.slug.trim());
         fd.append("sort_order", String(Number(form.sort_order) || 0));
         fd.append("is_active", String(form.is_active));
         fd.append("image", file);
@@ -79,7 +76,6 @@ export function CollectionForm({
           sort_order: Number(form.sort_order) || 0,
           is_active: form.is_active,
         };
-        if (form.slug.trim()) payload.slug = form.slug.trim();
         if (isEdit) {
           await api(`/admin/collections/${collection!.id}/`, { method: "PATCH", body: payload });
         } else {
@@ -106,14 +102,6 @@ export function CollectionForm({
 
       <Field label="Nomi">
         <Input value={form.title} onChange={(e) => set("title", e.target.value)} />
-      </Field>
-
-      <Field label="Slug" hint="Bo'sh qoldirilsa avtomatik yaratiladi">
-        <Input
-          value={form.slug}
-          onChange={(e) => set("slug", e.target.value)}
-          placeholder="oq-kolleksiya"
-        />
       </Field>
 
       <Field label="Tartib">

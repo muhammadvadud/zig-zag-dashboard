@@ -133,7 +133,7 @@ export interface ProductVariant {
   name: string;
   width_cm: number | null;
   height_cm: number | null;
-  extra_price: string;
+  price: string;
   unit_price: string;
   is_active: boolean;
   label?: string;
@@ -156,7 +156,7 @@ export interface AdminProduct {
   description_uz: string;
   description_ru: string;
   material: string;
-  base_price: string;
+  starting_price: string;
   price_per_m2: string;
   discount_percent: number;
   is_active: boolean;

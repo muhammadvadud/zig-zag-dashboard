@@ -70,7 +70,6 @@ type FormState = {
   description_uz: string;
   description_ru: string;
   material: string;
-  base_price: string;
   price_per_m2: string;
   discount_percent: string;
   stock: string;
@@ -89,7 +88,7 @@ interface LocalVariant {
   name: string;
   width_cm: string;
   height_cm: string;
-  extra_price: string;
+  price: string;
   is_active: boolean;
 }
 
@@ -107,7 +106,7 @@ function mkVariant(): LocalVariant {
     name: "",
     width_cm: "",
     height_cm: "",
-    extra_price: "0",
+    price: "0",
     is_active: true,
   };
 }
@@ -121,7 +120,6 @@ function initial(product?: AdminProduct | null): FormState {
     description_uz: product?.description_uz ?? "",
     description_ru: product?.description_ru ?? "",
     material: product?.material ?? "",
-    base_price: product ? String(parseFloat(product.base_price) || 0) : "",
     price_per_m2: product ? String(parseFloat(product.price_per_m2 ?? "0") || 0) : "",
     discount_percent: product ? String(product.discount_percent ?? 0) : "0",
     stock: product ? String(product.stock ?? 0) : "0",
@@ -379,7 +377,7 @@ export function ProductForm({ product }: { product?: AdminProduct | null }) {
             name: lv.name,
             width_cm: lv.width_cm ? Number(lv.width_cm) : null,
             height_cm: lv.height_cm ? Number(lv.height_cm) : null,
-            extra_price: lv.extra_price || "0",
+            price: lv.price || "0",
             is_active: lv.is_active,
           },
         });
@@ -399,15 +397,20 @@ export function ProductForm({ product }: { product?: AdminProduct | null }) {
     }
   }
 
-  /* ---- live price preview ---- */
-  const finalPrice = useMemo(() => {
-    const base = parseFloat(form.base_price) || 0;
-    const disc = Number(form.discount_percent) || 0;
-    return Math.max(0, base - (base * disc) / 100);
-  }, [form.base_price, form.discount_percent]);
-
   const showVariants = form.size_mode === "variant" || form.size_mode === "both";
   const showPricePerM2 = form.size_mode !== "variant";
+
+  /* ---- live "dan" narx: eng arzon variant narxi (yoki per-m²), chegirma bilan ---- */
+  const finalPrice = useMemo(() => {
+    const disc = Number(form.discount_percent) || 0;
+    const prices = [
+      ...serverVariants.map((v) => parseFloat(v.price) || 0),
+      ...localVariants.map((v) => parseFloat(v.price) || 0),
+    ].filter((x) => x > 0);
+    let base = prices.length ? Math.min(...prices) : 0;
+    if (!base && showPricePerM2) base = parseFloat(form.price_per_m2) || 0; // per-m² (indikativ)
+    return Math.max(0, base - (base * disc) / 100);
+  }, [serverVariants, localVariants, form.price_per_m2, form.discount_percent, showPricePerM2]);
 
   /* ---- submit ---- */
   async function onSubmit(e: React.FormEvent) {
@@ -424,7 +427,6 @@ export function ProductForm({ product }: { product?: AdminProduct | null }) {
       description_uz: form.description_uz,
       description_ru: form.description_ru,
       material: form.material,
-      base_price: String(parseFloat(form.base_price) || 0),
       price_per_m2: showPricePerM2 ? String(parseFloat(form.price_per_m2) || 0) : null,
       discount_percent: Number(form.discount_percent) || 0,
       stock: Number(form.stock) || 0,
@@ -480,12 +482,6 @@ export function ProductForm({ product }: { product?: AdminProduct | null }) {
                   <Input value={form.name_ru} onChange={(e) => set("name_ru", e.target.value)} placeholder="Белая штора" />
                 </Field>
               </div>
-              {isEdit && (
-                <div className="flex items-center gap-2 rounded-xl bg-navy-50 px-4 py-2.5 text-sm text-navy-500">
-                  <span className="font-mono text-navy-400">/{product!.slug}</span>
-                  <span className="text-xs text-navy-300">(slug o'zgarmaydi)</span>
-                </div>
-              )}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <Field label="Kategoriya">
                   <div className="relative">
@@ -540,8 +536,8 @@ export function ProductForm({ product }: { product?: AdminProduct | null }) {
                       <span className="font-medium text-navy-800">
                         {sv.label || sv.name || (sv.width_cm && sv.height_cm ? `${sv.width_cm}×${sv.height_cm} sm` : `Variant #${sv.id}`)}
                       </span>
-                      {Number(sv.extra_price) > 0 && (
-                        <span className="ml-2 text-xs text-navy-400">+{money(sv.extra_price)}</span>
+                      {Number(sv.price) > 0 && (
+                        <span className="ml-2 text-xs text-navy-500">{money(sv.price)}</span>
                       )}
                     </div>
                     <button type="button" onClick={() => deleteServerVariant(sv.id)}
@@ -567,9 +563,9 @@ export function ProductForm({ product }: { product?: AdminProduct | null }) {
                         <Input type="number" min="0" step="0.1" value={lv.height_cm}
                           onChange={(e) => updateLV(lv._id, { height_cm: e.target.value })} placeholder="250" />
                       </Field>
-                      <Field label="Qo'shimcha narx">
-                        <Input type="number" min="0" step="0.01" value={lv.extra_price}
-                          onChange={(e) => updateLV(lv._id, { extra_price: e.target.value })} placeholder="0" />
+                      <Field label="Narx (so'm)">
+                        <Input type="number" min="0" step="0.01" value={lv.price}
+                          onChange={(e) => updateLV(lv._id, { price: e.target.value })} placeholder="0" />
                       </Field>
                     </div>
                     <div className="mt-3 flex items-center justify-between">
@@ -785,10 +781,9 @@ export function ProductForm({ product }: { product?: AdminProduct | null }) {
         <div className="space-y-6">
           <Section icon={<Wallet className="size-5" />} title="Narx va ombor" desc="Narxlash va qoldiq">
             <div className="space-y-4">
-              <Field label="Asosiy narx (so'm)">
-                <Input type="number" min="0" step="0.01" value={form.base_price}
-                  onChange={(e) => set("base_price", e.target.value)} placeholder="0" />
-              </Field>
+              <p className="rounded-xl bg-navy-50 px-4 py-2.5 text-xs text-navy-500">
+                Narx tayyor o'lchamlarda (har variantning o'z narxi){showPricePerM2 ? " yoki 1 m² narxida (custom o'lcham)" : ""} belgilanadi.
+              </p>
               <div className="grid grid-cols-2 gap-4">
                 {showPricePerM2 && (
                   <Field label="Narx / m²">
@@ -806,7 +801,7 @@ export function ProductForm({ product }: { product?: AdminProduct | null }) {
                   onChange={(e) => set("stock", e.target.value)} />
               </Field>
               <div className="flex items-center justify-between rounded-xl bg-navy-50 px-4 py-3">
-                <span className="text-sm text-navy-500">Yakuniy narx</span>
+                <span className="text-sm text-navy-500">Boshlang'ich narx (dan)</span>
                 <span className="text-base font-bold tabular-nums text-navy-900">{money(finalPrice)}</span>
               </div>
             </div>
