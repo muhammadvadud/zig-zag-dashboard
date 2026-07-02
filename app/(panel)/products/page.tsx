@@ -98,13 +98,6 @@ export default function ProductsPage() {
       render: (p) => `${p.discount_percent ?? 0}%`,
     },
     {
-      key: "stock",
-      header: "Stok",
-      align: "right",
-      render: (p) =>
-        p.stock < 10 ? <Badge color="red">{p.stock}</Badge> : <span>{p.stock}</span>,
-    },
-    {
       key: "badges",
       header: "Nishonlar",
       render: (p) =>

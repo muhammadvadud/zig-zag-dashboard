@@ -160,7 +160,6 @@ export interface AdminProduct {
   price_per_m2: string;
   discount_percent: number;
   is_active: boolean;
-  stock: number;
   tailor: number | null;
   badges: number[];
   badges_detail: Badge[];
@@ -255,12 +254,6 @@ export interface PaymentSlice {
   provider: string;
   amount: number;
   count: number;
-}
-export interface LowStockItem {
-  id: number;
-  name: string;
-  slug: string;
-  stock: number;
 }
 export interface RecentOrder {
   order_number: string;

@@ -3,7 +3,6 @@
 import Link from "next/link";
 import {
   Activity,
-  AlertTriangle,
   ArrowRight,
   Banknote,
   CalendarDays,
@@ -25,7 +24,6 @@ import { useState } from "react";
 
 import { useApi } from "@/lib/api";
 import type {
-  LowStockItem,
   Overview,
   PaymentSlice,
   RecentOrder,
@@ -166,7 +164,6 @@ export default function DashboardPage() {
   const recentMeasurements = useApi<Listed<RecentMeasurement>>(
     "/admin/stats/recent-measurements/?limit=6"
   );
-  const lowStock = useApi<Listed<LowStockItem>>("/admin/stats/low-stock/?threshold=10");
   const pendingReviews = useApi<Listed<PendingReview>>("/admin/stats/pending-reviews/?limit=6");
 
   const o = overview.data;
@@ -230,28 +227,6 @@ export default function DashboardPage() {
       header: "Holat",
       align: "right",
       render: (r) => <Badge color="navy">{r.status}</Badge>,
-    },
-  ];
-
-  const lowStockCols: Column<LowStockItem>[] = [
-    {
-      key: "name",
-      header: "Mahsulot",
-      render: (r) => (
-        <Link href={`/products/${r.slug}/edit`} className="font-medium text-navy-800 hover:text-gold-dark">
-          {r.name}
-        </Link>
-      ),
-    },
-    {
-      key: "stock",
-      header: "Qoldiq",
-      align: "right",
-      render: (r) => (
-        <Badge color={r.stock <= 0 ? "red" : r.stock <= 5 ? "amber" : "gold"}>
-          {num(r.stock)} dona
-        </Badge>
-      ),
     },
   ];
 
@@ -468,28 +443,6 @@ export default function DashboardPage() {
               rows={recentMeasurements.data?.items}
               rowKey={(r) => r.id}
               empty="So'rovlar yo'q"
-            />
-          </Section>
-
-          <Section
-            title="Kam qolgan mahsulotlar"
-            subtitle="Qoldiq ≤ 10"
-            icon={<AlertTriangle className="size-5" />}
-            action={
-              <div className="flex items-center gap-2">
-                <CountChip n={lowStock.data?.items?.length} />
-                <ViewAll href="/dashboard/low-stock" />
-              </div>
-            }
-            loading={lowStock.isLoading}
-            error={lowStock.error}
-            bodyClassName="px-2 pb-3 pt-1 sm:px-6"
-          >
-            <DataTable
-              columns={lowStockCols}
-              rows={lowStock.data?.items}
-              rowKey={(r) => r.id}
-              empty="Hammasi yetarli"
             />
           </Section>
         </div>

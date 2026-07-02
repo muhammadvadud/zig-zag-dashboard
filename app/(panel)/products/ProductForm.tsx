@@ -72,7 +72,6 @@ type FormState = {
   material: string;
   price_per_m2: string;
   discount_percent: string;
-  stock: string;
   is_active: boolean;
   badges: number[];
   styles: number[];
@@ -122,7 +121,6 @@ function initial(product?: AdminProduct | null): FormState {
     material: product?.material ?? "",
     price_per_m2: product ? String(parseFloat(product.price_per_m2 ?? "0") || 0) : "",
     discount_percent: product ? String(product.discount_percent ?? 0) : "0",
-    stock: product ? String(product.stock ?? 0) : "0",
     is_active: product?.is_active ?? true,
     badges: product?.badges ?? [],
     styles: product?.styles ?? [],
@@ -429,7 +427,6 @@ export function ProductForm({ product }: { product?: AdminProduct | null }) {
       material: form.material,
       price_per_m2: showPricePerM2 ? String(parseFloat(form.price_per_m2) || 0) : null,
       discount_percent: Number(form.discount_percent) || 0,
-      stock: Number(form.stock) || 0,
       is_active: form.is_active,
       badges: form.badges,
       styles: form.styles,
@@ -796,10 +793,6 @@ export function ProductForm({ product }: { product?: AdminProduct | null }) {
                     onChange={(e) => set("discount_percent", e.target.value)} />
                 </Field>
               </div>
-              <Field label="Umumiy stok (dona)">
-                <Input type="number" min="0" value={form.stock}
-                  onChange={(e) => set("stock", e.target.value)} />
-              </Field>
               <div className="flex items-center justify-between rounded-xl bg-navy-50 px-4 py-3">
                 <span className="text-sm text-navy-500">Boshlang'ich narx (dan)</span>
                 <span className="text-base font-bold tabular-nums text-navy-900">{money(finalPrice)}</span>
