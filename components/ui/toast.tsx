@@ -19,18 +19,18 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <Ctx.Provider value={notify}>
       {children}
-      <div className="fixed bottom-5 right-5 z-[60] flex flex-col gap-2">
+      <div className="fixed bottom-5 right-5 z-[60] flex w-full max-w-sm flex-col gap-2">
         {toasts.map((t) => (
           <div
             key={t.id}
-            className="flex items-center gap-2 rounded-xl bg-white px-4 py-3 text-sm shadow-lg border border-navy-100"
+            className="flex items-start gap-2 rounded-xl bg-white px-4 py-3 text-sm shadow-lg border border-navy-100"
           >
             {t.type === "success" ? (
-              <CheckCircle2 className="size-5 text-ok" />
+              <CheckCircle2 className="size-5 shrink-0 text-ok" />
             ) : (
-              <AlertCircle className="size-5 text-danger" />
+              <AlertCircle className="size-5 shrink-0 text-danger" />
             )}
-            <span className="text-navy-700">{t.msg}</span>
+            <span className="whitespace-pre-line text-navy-700">{t.msg}</span>
             <button
               onClick={() => setToasts((x) => x.filter((y) => y.id !== t.id))}
               className="text-navy-300 hover:text-navy-500"

@@ -169,6 +169,7 @@ export interface AdminProduct {
   colors_detail?: Color[];
   size_mode?: ProductType;
   attributes?: ProductAttribute[];
+  main_image?: string | null;
 }
 
 export interface Tailor {

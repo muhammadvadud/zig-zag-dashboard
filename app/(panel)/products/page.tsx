@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, ImageOff } from "lucide-react";
 import { useApi, api, ApiError } from "@/lib/api";
 import type { AdminProduct, AdminTailor, Category, Paginated } from "@/lib/types";
 import { money } from "@/lib/format";
@@ -65,6 +65,24 @@ export default function ProductsPage() {
   }
 
   const columns: Column<AdminProduct>[] = [
+    {
+      key: "image",
+      header: "",
+      hideOnMobile: true,
+      render: (p) =>
+        p.main_image ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={p.main_image}
+            alt=""
+            className="size-11 rounded-lg border border-navy-100 object-cover"
+          />
+        ) : (
+          <div className="flex size-11 items-center justify-center rounded-lg border border-dashed border-navy-200 bg-navy-50/50 text-navy-300">
+            <ImageOff className="size-4" />
+          </div>
+        ),
+    },
     {
       key: "name",
       header: "Nomi",

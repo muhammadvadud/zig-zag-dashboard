@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useRef } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -181,34 +181,127 @@ const PRODUCT_TYPES: { value: ProductType; label: string; desc: string }[] = [
   { value: "both", label: "Ikkalasi", desc: "Ham variantlar, ham erkin o'lchov" },
 ];
 
-/* ---- image thumb with remove button ---- */
-function ImageThumb({
-  src, onRemove, isMain, onToggleMain,
-}: { src: string; onRemove: () => void; isMain: boolean; onToggleMain?: () => void }) {
+/* ---- image card: photo + inline color link, no separate list below ---- */
+function ImageCard({
+  src, isMain, onToggleMain, onRemove, colorId, onColorChange, colorOptions,
+}: {
+  src: string;
+  isMain: boolean;
+  onToggleMain?: () => void;
+  onRemove: () => void;
+  colorId: string;
+  onColorChange?: (colorId: string) => void;
+  colorOptions: Color[];
+}) {
   return (
-    <div className="relative shrink-0">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={src} alt="" className={cn("size-20 rounded-xl border-2 object-cover", isMain ? "border-gold shadow-md" : "border-navy-100")} />
-      {isMain && (
-        <span className="absolute -top-1.5 left-1/2 -translate-x-1/2 rounded-full bg-gold px-1.5 py-0.5 text-[9px] font-bold text-navy-900">
-          Asosiy
-        </span>
-      )}
-      <div className="absolute -right-1.5 -top-1.5 flex gap-0.5">
-        {onToggleMain && (
-          <button type="button" onClick={onToggleMain}
-            className={cn("flex size-5 items-center justify-center rounded-full text-[9px] font-bold shadow",
-              isMain ? "bg-gold text-navy-900" : "bg-white border border-navy-200 text-navy-500 hover:bg-gold/10")}
-            title="Asosiy rasm"
-          >
-            <Star className="size-2.5" />
-          </button>
+    <div className="w-28 shrink-0 overflow-hidden rounded-xl border border-navy-100 bg-white">
+      <div className="relative">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={src} alt="" className={cn("aspect-square w-full object-cover", isMain && "ring-2 ring-inset ring-gold")} />
+        {isMain && (
+          <span className="absolute left-1.5 top-1.5 rounded-full bg-gold px-1.5 py-0.5 text-[9px] font-bold text-navy-900">
+            Asosiy
+          </span>
         )}
-        <button type="button" onClick={onRemove}
-          className="flex size-5 items-center justify-center rounded-full bg-red-500 text-white shadow">
-          <X className="size-2.5" />
-        </button>
+        <div className="absolute right-1.5 top-1.5 flex gap-1">
+          {onToggleMain && (
+            <button type="button" onClick={onToggleMain}
+              className={cn("flex size-5 items-center justify-center rounded-full text-[9px] font-bold shadow",
+                isMain ? "bg-gold text-navy-900" : "bg-white/90 border border-navy-200 text-navy-500 hover:bg-gold/10")}
+              title="Asosiy rasm"
+            >
+              <Star className="size-2.5" />
+            </button>
+          )}
+          <button type="button" onClick={onRemove}
+            className="flex size-5 items-center justify-center rounded-full bg-red-500 text-white shadow">
+            <X className="size-2.5" />
+          </button>
+        </div>
       </div>
+      {colorOptions.length > 0 && (
+        <Select
+          value={colorId}
+          onChange={(e) => onColorChange?.(e.target.value)}
+          className="w-full rounded-none border-0 border-t border-navy-100 px-2 py-1.5 text-xs"
+        >
+          <option value="">— Rangsiz —</option>
+          {colorOptions.map((c) => (
+            <option key={c.id} value={c.id}>{c.name}</option>
+          ))}
+        </Select>
+      )}
+    </div>
+  );
+}
+
+/* ---- modern color picker (swatch trigger + preset palette popover) ---- */
+const PRESET_COLORS = [
+  "#c9a769", "#1a2a4a", "#ffffff", "#000000", "#94a3b8",
+  "#ef4444", "#f97316", "#eab308", "#22c55e", "#06b6d4",
+  "#3b82f6", "#8b5cf6", "#ec4899", "#78350f", "#164e63",
+];
+
+function ColorPicker({ value, onChange }: { value: string; onChange: (hex: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function onDocDown(e: MouseEvent) {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", onDocDown);
+    return () => document.removeEventListener("mousedown", onDocDown);
+  }, [open]);
+
+  return (
+    <div className="relative" ref={wrapRef}>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="flex h-10 items-center gap-2 rounded-xl border border-navy-200 bg-white px-3 shadow-sm transition-colors hover:border-gold/50"
+      >
+        <span className="size-5 shrink-0 rounded-full border border-black/10 shadow-inner" style={{ backgroundColor: value }} />
+        <span className="text-sm font-medium uppercase tracking-wide text-navy-600">{value}</span>
+      </button>
+
+      {open && (
+        <div className="absolute z-20 mt-2 w-60 rounded-2xl border border-navy-100 bg-white p-3 shadow-xl">
+          <div className="grid grid-cols-5 gap-2">
+            {PRESET_COLORS.map((hex) => (
+              <button
+                key={hex}
+                type="button"
+                onClick={() => onChange(hex)}
+                className={cn(
+                  "size-7 rounded-full border transition-transform hover:scale-110",
+                  value.toLowerCase() === hex ? "ring-2 ring-gold ring-offset-1" : "border-black/10"
+                )}
+                style={{ backgroundColor: hex }}
+                title={hex}
+              />
+            ))}
+          </div>
+          <div className="mt-3 flex items-center gap-2 border-t border-navy-100 pt-3">
+            <label className="relative flex size-9 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-lg border border-navy-200">
+              <span className="pointer-events-none absolute inset-0" style={{ backgroundColor: value }} />
+              <input
+                type="color"
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                className="absolute inset-0 size-full cursor-pointer opacity-0"
+              />
+            </label>
+            <input
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
+              className="h-9 flex-1 rounded-lg border border-navy-200 px-2 text-sm uppercase text-navy-700 focus:border-gold/60 focus:outline-none"
+              maxLength={7}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -248,7 +341,6 @@ export function ProductForm({ product }: { product?: AdminProduct | null }) {
   /* --- form state --- */
   const [form, setForm] = useState<FormState>(() => initial(product));
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   /* --- local (staged) variants & images --- */
   const [localVariants, setLocalVariants] = useState<LocalVariant[]>([]);
@@ -363,6 +455,17 @@ export function ProductForm({ product }: { product?: AdminProduct | null }) {
       mutateImages();
     } catch (err) { notify(parseApiErrors(err), "error"); }
   }
+  function setLocalImageColor(id: string, colorId: string) {
+    setLocalImages((v) => v.map((i) => (i._id === id ? { ...i, colorId } : i)));
+  }
+  async function setServerImageColor(imgId: number, colorId: string) {
+    try {
+      await api(`/admin/products/${product!.slug}/images/${imgId}/`, {
+        method: "PATCH", body: { color: colorId ? Number(colorId) : null },
+      });
+      mutateImages();
+    } catch (err) { notify(parseApiErrors(err), "error"); }
+  }
 
   /* --- save helpers --- */
   async function saveVariants(slug: string) {
@@ -397,6 +500,10 @@ export function ProductForm({ product }: { product?: AdminProduct | null }) {
 
   const showVariants = form.size_mode === "variant" || form.size_mode === "both";
   const showPricePerM2 = form.size_mode !== "variant";
+  const linkedColors = useMemo(
+    () => colors.filter((c) => form.colors.includes(c.id)),
+    [colors, form.colors]
+  );
 
   /* ---- live "dan" narx: eng arzon variant narxi (yoki per-m²), chegirma bilan ---- */
   const finalPrice = useMemo(() => {
@@ -413,9 +520,8 @@ export function ProductForm({ product }: { product?: AdminProduct | null }) {
   /* ---- submit ---- */
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError(null);
-    if (!form.category) return setError("Kategoriyani tanlang");
-    if (!form.name_uz.trim() || !form.name_ru.trim()) return setError("Nomi (uz/ru) majburiy");
+    if (!form.category) return notify("Kategoriyani tanlang", "error");
+    if (!form.name_uz.trim() || !form.name_ru.trim()) return notify("Nomi (uz/ru) majburiy", "error");
 
     const payload = {
       category: Number(form.category),
@@ -450,7 +556,7 @@ export function ProductForm({ product }: { product?: AdminProduct | null }) {
       await Promise.all([saveVariants(savedSlug), saveImages(savedSlug)]);
       router.push("/products");
     } catch (err) {
-      setError(parseApiErrors(err));
+      notify(parseApiErrors(err), "error");
       setSaving(false);
     }
   }
@@ -458,11 +564,6 @@ export function ProductForm({ product }: { product?: AdminProduct | null }) {
   /* ============================================================ */
   return (
     <form onSubmit={onSubmit} className="space-y-6">
-      {error && (
-        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 whitespace-pre-line">
-          {error}
-        </div>
-      )}
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* ---- main column ---- */}
@@ -615,8 +716,7 @@ export function ProductForm({ product }: { product?: AdminProduct | null }) {
                   <Input value={newColorName} onChange={(e) => setNewColorName(e.target.value)} placeholder="Masalan: Bej" />
                 </Field>
                 <Field label="Rang">
-                  <input type="color" value={newColorHex} onChange={(e) => setNewColorHex(e.target.value)}
-                    className="h-10 w-14 cursor-pointer rounded-lg border border-navy-200 bg-white p-1" />
+                  <ColorPicker value={newColorHex} onChange={setNewColorHex} />
                 </Field>
                 <Button type="button" variant="outline" loading={creatingColor}
                   onClick={createColor} disabled={!newColorName.trim()}>
@@ -627,47 +727,33 @@ export function ProductForm({ product }: { product?: AdminProduct | null }) {
           </Section>
 
           {/* === Rasmlar === */}
-          <Section icon={<ImagePlus className="size-5" />} title="Rasmlar" desc="Mahsulot rasmlari; ★ belgili — asosiy rasm">
+          <Section icon={<ImagePlus className="size-5" />} title="Rasmlar" desc="Mahsulot rasmlari; ★ belgili — asosiy rasm, har birini rangga ulash mumkin">
             <div className="space-y-4">
-              {/* Server images */}
               {(serverImages.length > 0 || localImages.length > 0) && (
                 <div className="flex flex-wrap gap-3">
                   {serverImages.map((img) => (
-                    <ImageThumb
+                    <ImageCard
                       key={img.id}
                       src={img.image_url}
                       isMain={img.is_main}
                       onRemove={() => deleteServerImage(img.id)}
                       onToggleMain={isEdit ? () => toggleServerMain(img.id) : undefined}
+                      colorId={img.color != null ? String(img.color) : ""}
+                      onColorChange={(colorId) => setServerImageColor(img.id, colorId)}
+                      colorOptions={linkedColors}
                     />
                   ))}
                   {localImages.map((li) => (
-                    <ImageThumb
+                    <ImageCard
                       key={li._id}
                       src={URL.createObjectURL(li.file)}
                       isMain={li.is_main}
                       onRemove={() => removeLocalImage(li._id)}
                       onToggleMain={() => toggleLocalMain(li._id)}
+                      colorId={li.colorId}
+                      onColorChange={(colorId) => setLocalImageColor(li._id, colorId)}
+                      colorOptions={linkedColors}
                     />
-                  ))}
-                </div>
-              )}
-
-              {/* color link for local images */}
-              {localImages.length > 0 && form.colors.length > 0 && (
-                <div className="space-y-2">
-                  <p className="text-xs font-medium text-navy-500">Rasmlarni rangga ulash (ixtiyoriy):</p>
-                  {localImages.map((li) => (
-                    <div key={li._id} className="flex items-center gap-2 text-sm">
-                      <span className="w-32 truncate text-navy-400">{li.file.name}</span>
-                      <Select className="flex-1 text-sm" value={li.colorId}
-                        onChange={(e) => setLocalImages((v) => v.map((i) => i._id === li._id ? { ...i, colorId: e.target.value } : i))}>
-                        <option value="">— Rangsiz —</option>
-                        {colors.filter((c) => form.colors.includes(c.id)).map((c) => (
-                          <option key={c.id} value={c.id}>{c.name}</option>
-                        ))}
-                      </Select>
-                    </div>
                   ))}
                 </div>
               )}
