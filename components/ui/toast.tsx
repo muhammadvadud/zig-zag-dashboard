@@ -19,11 +19,12 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <Ctx.Provider value={notify}>
       {children}
-      <div className="fixed bottom-5 right-5 z-[60] flex w-full max-w-sm flex-col gap-2">
+      <div className="fixed top-5 right-5 z-[60] flex w-full max-w-sm flex-col gap-2">
         {toasts.map((t) => (
           <div
             key={t.id}
-            className="flex items-start gap-2 rounded-xl bg-white px-4 py-3 text-sm shadow-lg border border-navy-100"
+            className="zz-toast-in flex items-start gap-2 rounded-xl bg-white px-4 py-3 text-sm shadow-lg border-l-4 border border-navy-100"
+            style={{ borderLeftColor: t.type === "success" ? "var(--color-ok)" : "var(--color-danger)" }}
           >
             {t.type === "success" ? (
               <CheckCircle2 className="size-5 shrink-0 text-ok" />
