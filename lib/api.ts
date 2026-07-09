@@ -9,27 +9,44 @@ const ACCESS_KEY = "zz_access";
 const REFRESH_KEY = "zz_refresh";
 const USER_KEY = "zz_user";
 
+function setCookie(name: string, value: string, days = 30) {
+  if (typeof document === "undefined") return;
+  const maxAge = days * 24 * 60 * 60;
+  const secure = window.location.protocol === "https:" ? "; Secure" : "";
+  document.cookie = `${name}=${encodeURIComponent(value)}; Path=/; Max-Age=${maxAge}; SameSite=Lax${secure}`;
+}
+
+function getCookie(name: string): string | null {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+function deleteCookie(name: string) {
+  if (typeof document === "undefined") return;
+  document.cookie = `${name}=; Path=/; Max-Age=0; SameSite=Lax`;
+}
+
 export const tokens = {
   get access() {
-    return typeof window === "undefined" ? null : localStorage.getItem(ACCESS_KEY);
+    return getCookie(ACCESS_KEY);
   },
   get refresh() {
-    return typeof window === "undefined" ? null : localStorage.getItem(REFRESH_KEY);
+    return getCookie(REFRESH_KEY);
   },
   set(access: string, refresh?: string, user?: unknown) {
-    localStorage.setItem(ACCESS_KEY, access);
-    if (refresh) localStorage.setItem(REFRESH_KEY, refresh);
-    if (user) localStorage.setItem(USER_KEY, JSON.stringify(user));
+    setCookie(ACCESS_KEY, access);
+    if (refresh) setCookie(REFRESH_KEY, refresh);
+    if (user) setCookie(USER_KEY, JSON.stringify(user));
   },
   get user() {
-    if (typeof window === "undefined") return null;
-    const raw = localStorage.getItem(USER_KEY);
+    const raw = getCookie(USER_KEY);
     return raw ? JSON.parse(raw) : null;
   },
   clear() {
-    localStorage.removeItem(ACCESS_KEY);
-    localStorage.removeItem(REFRESH_KEY);
-    localStorage.removeItem(USER_KEY);
+    deleteCookie(ACCESS_KEY);
+    deleteCookie(REFRESH_KEY);
+    deleteCookie(USER_KEY);
   },
 };
 
