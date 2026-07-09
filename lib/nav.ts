@@ -26,6 +26,7 @@ export const NAV: NavGroup[] = [
       { label: "Kategoriyalar", href: "/categories", icon: "FolderTree" },
       { label: "Uslublar", href: "/styles", icon: "Palette" },
       { label: "Xonalar", href: "/rooms", icon: "DoorOpen" },
+      { label: "Matolar", href: "/materials", icon: "Shirt" },
       { label: "Chevarlar", href: "/tailors", icon: "Scissors" },
       { label: "Mahsulotlar", href: "/products", icon: "Package" },
       { label: "Ranglar", href: "/colors", icon: "Paintbrush" },

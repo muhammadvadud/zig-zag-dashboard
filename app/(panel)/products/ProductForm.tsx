@@ -39,6 +39,7 @@ import type {
   Color,
   Style,
   Room,
+  Material,
 } from "@/lib/types";
 import { Button, Field, Input, Textarea, Select, Card } from "@/components/ui";
 import { useToast } from "@/components/ui/toast";
@@ -69,13 +70,13 @@ type FormState = {
   name_ru: string;
   description_uz: string;
   description_ru: string;
-  material: string;
   price_per_m2: string;
   discount_percent: string;
   is_active: boolean;
   badges: number[];
   styles: number[];
   rooms: number[];
+  materials: number[];
   colors: number[];
   size_mode: ProductType;
   attributes: ProductAttribute[];
@@ -118,13 +119,13 @@ function initial(product?: AdminProduct | null): FormState {
     name_ru: product?.name_ru ?? "",
     description_uz: product?.description_uz ?? "",
     description_ru: product?.description_ru ?? "",
-    material: product?.material ?? "",
     price_per_m2: product ? String(parseFloat(product.price_per_m2 ?? "0") || 0) : "",
     discount_percent: product ? String(product.discount_percent ?? 0) : "0",
     is_active: product?.is_active ?? true,
     badges: product?.badges ?? [],
     styles: product?.styles ?? [],
     rooms: product?.rooms ?? [],
+    materials: product?.materials ?? [],
     colors: product?.colors ?? [],
     size_mode: product?.size_mode ?? "variant",
     attributes: product?.attributes ?? [],
@@ -321,12 +322,14 @@ export function ProductForm({ product }: { product?: AdminProduct | null }) {
   const { data: colorData, mutate: mutateColors } = useApi<unknown>("/admin/colors/", { dedupingInterval: 0 });
   const { data: styleData } = useApi<unknown>("/admin/styles/");
   const { data: roomData } = useApi<unknown>("/admin/rooms/");
+  const { data: materialData } = useApi<unknown>("/admin/materials/");
   const categories: Category[] = Array.isArray(catData) ? catData : catData?.results ?? [];
   const tailors: AdminTailor[] = tailorData?.results ?? [];
   const badges: AdminBadge[] = asList<AdminBadge>(badgeData);
   const colors: Color[] = asList<Color>(colorData);
   const styles: Style[] = asList<Style>(styleData);
   const rooms: Room[] = asList<Room>(roomData);
+  const materials: Material[] = asList<Material>(materialData);
 
   /* --- edit mode: server variants & images --- */
   const { data: serverVariantsRaw, mutate: mutateVariants } = useApi<ProductVariant[] | Paginated<ProductVariant>>(
@@ -371,7 +374,7 @@ export function ProductForm({ product }: { product?: AdminProduct | null }) {
     }));
   }
 
-  function toggleIn(key: "styles" | "rooms" | "colors", id: number) {
+  function toggleIn(key: "styles" | "rooms" | "colors" | "materials", id: number) {
     setForm((f) => ({
       ...f,
       [key]: f[key].includes(id) ? f[key].filter((x) => x !== id) : [...f[key], id],
@@ -530,13 +533,13 @@ export function ProductForm({ product }: { product?: AdminProduct | null }) {
       name_ru: form.name_ru.trim(),
       description_uz: form.description_uz,
       description_ru: form.description_ru,
-      material: form.material,
       price_per_m2: showPricePerM2 ? String(parseFloat(form.price_per_m2) || 0) : null,
       discount_percent: Number(form.discount_percent) || 0,
       is_active: form.is_active,
       badges: form.badges,
       styles: form.styles,
       rooms: form.rooms,
+      materials: form.materials,
       colors: form.colors,
       size_mode: form.size_mode,
       attributes: form.attributes.filter((a) => a.key.trim()),
@@ -782,9 +785,6 @@ export function ProductForm({ product }: { product?: AdminProduct | null }) {
                     onChange={(e) => set("description_ru", e.target.value)} placeholder="Описание товара..." />
                 </Field>
               </div>
-              <Field label="Material">
-                <Input value={form.material} onChange={(e) => set("material", e.target.value)} placeholder="Masalan: paxta, baxmal..." />
-              </Field>
             </div>
           </Section>
 
@@ -852,6 +852,54 @@ export function ProductForm({ product }: { product?: AdminProduct | null }) {
                         active ? "border-gold bg-gold/10 text-navy-900 ring-1 ring-gold/40" : "border-navy-200 bg-white text-navy-600 hover:border-navy-300")}>
                       {active && <Check className="size-3.5 text-gold-dark" />}
                       {r.name}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </Section>
+
+          {/* === Matolar (Materials) === */}
+          <Section icon={<Layers className="size-5" />} title="Matolar" desc="Mahsulot qaysi matolardan tayyorlangan (bir nechta tanlash mumkin)">
+            {materials.length === 0 ? (
+              <p className="text-sm text-navy-400">
+                Hali mato yo&apos;q. <span className="font-medium text-navy-500">Matolar</span> bo&apos;limidan qo&apos;shing.
+              </p>
+            ) : (
+              <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+                {materials.map((m) => {
+                  const active = form.materials.includes(m.id);
+                  return (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => toggleIn("materials", m.id)}
+                      className={cn(
+                        "group relative flex items-center gap-3 rounded-2xl border p-3 text-left transition-all",
+                        active
+                          ? "border-gold bg-gradient-to-br from-gold/15 to-gold/5 shadow-sm ring-1 ring-gold/40"
+                          : "border-navy-100 bg-white hover:border-gold/40 hover:bg-gold/5"
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          "flex size-10 shrink-0 items-center justify-center rounded-xl transition-colors",
+                          active
+                            ? "bg-gold/25 text-gold-dark"
+                            : "bg-navy-50 text-navy-400 group-hover:text-gold-dark"
+                        )}
+                      >
+                        <Layers className="size-5" />
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block truncate text-sm font-semibold text-navy-800">{m.name}</span>
+                        <span className="block truncate text-xs text-navy-400">{m.description || m.slug}</span>
+                      </span>
+                      {active && (
+                        <span className="absolute right-2 top-2 flex size-5 items-center justify-center rounded-full bg-gold text-navy-900">
+                          <Check className="size-3.5" />
+                        </span>
+                      )}
                     </button>
                   );
                 })}

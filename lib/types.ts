@@ -128,6 +128,17 @@ export interface Room {
   sort_order?: number;
 }
 
+/** Mato/material — mahsulotga bir nechta biriktiriladi. */
+export interface Material {
+  id: number;
+  slug: string;
+  name: string;
+  description?: string;
+  is_active?: boolean;
+  sort_order?: number;
+  products_count?: number;
+}
+
 export interface ProductVariant {
   id: number;
   name: string;
@@ -155,7 +166,6 @@ export interface AdminProduct {
   name_ru: string;
   description_uz: string;
   description_ru: string;
-  material: string;
   starting_price: string;
   price_per_m2: string;
   discount_percent: number;
@@ -165,6 +175,8 @@ export interface AdminProduct {
   badges_detail: Badge[];
   styles?: number[];
   rooms?: number[];
+  materials?: number[];
+  materials_detail?: Material[];
   colors?: number[];
   colors_detail?: Color[];
   size_mode?: ProductType;
