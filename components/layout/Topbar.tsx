@@ -2,6 +2,7 @@
 
 import { Menu, LogOut, Search, User } from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import { NotificationBell } from "./NotificationBell";
 
 export function Topbar({ onMenu }: { onMenu: () => void }) {
   const { user, logout } = useAuth();
@@ -36,6 +37,7 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
       </div>
 
       <div className="ml-auto flex items-center gap-2.5">
+        <NotificationBell />
         <div className="flex items-center gap-2.5 rounded-full border border-navy-100 bg-white/60 py-1 pl-1 pr-3 shadow-sm transition-shadow hover:shadow-md">
           <div className="flex size-9 items-center justify-center rounded-full bg-gradient-to-br from-navy-700 to-navy-900 text-sm font-semibold text-cream shadow-inner ring-1 ring-gold/20">
             {initials || <User className="size-4.5 text-gold-light" />}
