@@ -8,6 +8,7 @@ import { ArrowLeft } from "lucide-react";
 import { api, useApi, ApiError } from "@/lib/api";
 import type { OrderDetail, OrderItem, OrderStatus } from "@/lib/types";
 import { money, fmtDateTime } from "@/lib/format";
+import { nextStatuses, isTerminalStatus } from "@/lib/orderFlow";
 
 import {
   Card,
@@ -164,25 +165,36 @@ export default function OrderDetailPage() {
                 </div>
               </div>
 
-              <div className="flex items-end gap-2">
-                <Select
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value as OrderStatus)}
-                >
-                  {ORDER_STATUS_OPTIONS.map((o) => (
-                    <option key={o.value} value={o.value}>
-                      {o.label}
+              {isTerminalStatus(data.status) ? (
+                <p className="text-sm text-navy-400">
+                  Bu buyurtma yakuniy holatda — holatni o&apos;zgartirib bo&apos;lmaydi.
+                </p>
+              ) : (
+                <div className="flex items-end gap-2">
+                  <Select
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value as OrderStatus)}
+                  >
+                    <option value={data.status} disabled>
+                      {ORDER_STATUS_OPTIONS.find((o) => o.value === data.status)?.label ??
+                        data.status}{" "}
+                      (joriy)
                     </option>
-                  ))}
-                </Select>
-                <Button
-                  onClick={save}
-                  loading={saving}
-                  disabled={!status || status === data.status}
-                >
-                  Saqlash
-                </Button>
-              </div>
+                    {nextStatuses(data.status).map((s) => (
+                      <option key={s} value={s}>
+                        {ORDER_STATUS_OPTIONS.find((o) => o.value === s)?.label ?? s}
+                      </option>
+                    ))}
+                  </Select>
+                  <Button
+                    onClick={save}
+                    loading={saving}
+                    disabled={!status || status === data.status}
+                  >
+                    Holatni o&apos;zgartirish
+                  </Button>
+                </div>
+              )}
             </div>
           </Card>
 
