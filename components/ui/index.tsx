@@ -88,6 +88,12 @@ export function Button({
 }
 
 /* ----------------------------- Inputs ----------------------------- */
+// Shared focus/hover/disabled treatment for text-like fields (Input, Textarea,
+// and — separately, since it also needs chevron room — Select). Kept as one
+// string so the three fields stay visually cohesive.
+export const FIELD_STATE_CLASSES =
+  "shadow-sm outline-none transition-all duration-150 hover:border-navy-300 focus:border-gold focus:shadow-md focus:ring-[3px] focus:ring-gold/20 disabled:cursor-not-allowed disabled:border-navy-100 disabled:bg-navy-50 disabled:text-navy-400";
+
 export function Input({
   className,
   ...props
@@ -95,7 +101,8 @@ export function Input({
   return (
     <input
       className={cn(
-        "w-full rounded-xl border border-navy-200 bg-white px-3.5 py-2 text-sm text-navy-800 placeholder:text-navy-300 outline-none focus:border-gold focus:ring-2 focus:ring-gold/30",
+        "w-full rounded-xl border border-navy-200 bg-white px-3.5 py-2 text-sm text-navy-800 placeholder:text-navy-300",
+        FIELD_STATE_CLASSES,
         className
       )}
       {...props}
@@ -110,7 +117,8 @@ export function Textarea({
   return (
     <textarea
       className={cn(
-        "w-full rounded-xl border border-navy-200 bg-white px-3.5 py-2 text-sm text-navy-800 placeholder:text-navy-300 outline-none focus:border-gold focus:ring-2 focus:ring-gold/30",
+        "w-full rounded-xl border border-navy-200 bg-white px-3.5 py-2 text-sm text-navy-800 placeholder:text-navy-300",
+        FIELD_STATE_CLASSES,
         className
       )}
       {...props}
@@ -118,17 +126,26 @@ export function Textarea({
   );
 }
 
+// Inline SVG chevron (navy-400) for the custom Select arrow — applied via
+// inline `style` rather than a Tailwind arbitrary-value class, since the
+// data URI's quotes/spaces don't survive Tailwind's JIT class parsing.
+const SELECT_CHEVRON =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236c83a8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E";
+
 export function Select({
   className,
   children,
+  style,
   ...props
 }: SelectHTMLAttributes<HTMLSelectElement>) {
   return (
     <select
       className={cn(
-        "rounded-xl border border-navy-200 bg-white px-3 py-2 text-sm text-navy-800 outline-none focus:border-gold focus:ring-2 focus:ring-gold/30",
+        "appearance-none rounded-xl border border-navy-200 bg-white bg-[length:16px_16px] bg-[right_0.65rem_center] bg-no-repeat py-2 pl-3 pr-9 text-sm text-navy-800",
+        FIELD_STATE_CLASSES,
         className
       )}
+      style={{ backgroundImage: `url("${SELECT_CHEVRON}")`, ...style }}
       {...props}
     >
       {children}

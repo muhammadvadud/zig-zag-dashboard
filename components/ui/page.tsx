@@ -3,6 +3,7 @@
 import { Search } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/cn";
+import { FIELD_STATE_CLASSES } from "./index";
 
 export function PageHeader({
   title,
@@ -49,7 +50,10 @@ export function SearchInput({
           t.current = setTimeout(() => onChange(e.target.value), 350);
         }}
         placeholder={placeholder}
-        className="w-full rounded-xl border border-navy-200 bg-white py-2 pl-9 pr-3 text-sm text-navy-800 placeholder:text-navy-300 outline-none focus:border-gold focus:ring-2 focus:ring-gold/30"
+        className={cn(
+          "w-full rounded-xl border border-navy-200 bg-white py-2 pl-9 pr-3 text-sm text-navy-800 placeholder:text-navy-300",
+          FIELD_STATE_CLASSES
+        )}
       />
     </div>
   );
