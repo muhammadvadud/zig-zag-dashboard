@@ -65,6 +65,10 @@ export const NAV: NavGroup[] = [
     ],
   },
   {
+    title: "STATISTIKA",
+    items: [{ label: "Statistika", href: "/statistics", icon: "BarChart3" }],
+  },
+  {
     title: "AI",
     items: [
       { label: "Suhbatlar", href: "/ai/conversations", icon: "MessagesSquare" },
