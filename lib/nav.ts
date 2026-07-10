@@ -78,7 +78,15 @@ export const NAV: NavGroup[] = [
   },
   {
     title: "TIZIM",
-    items: [{ label: "Audit jurnali", href: "/audit", icon: "ScrollText" }],
+    items: [
+      { label: "Audit jurnali", href: "/audit", icon: "ScrollText" },
+      {
+        label: "Sozlamalar",
+        href: "/settings",
+        icon: "Settings",
+        roles: ["employee", "manager", "admin"],
+      },
+    ],
   },
 ];
 
