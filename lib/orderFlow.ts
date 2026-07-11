@@ -4,8 +4,12 @@
 // staff member can't pick an invalid next status in the first place.
 import type { OrderStatus } from "./types";
 
+// "pending" -> "paid" ataylab yo'q: to'lov holatini faqat haqiqiy to'lov
+// webhook'i (Payme/Click) o'zgartiradi, xodim/manager qo'lda "to'landi" deb
+// belgilay olmaydi. Shu sabab "processing" ham yo'q — to'lovsiz buyurtmani
+// ishga tushirib bo'lmaydi.
 export const STATUS_FLOW: Record<OrderStatus, OrderStatus[]> = {
-  pending: ["paid", "processing", "cancelled"],
+  pending: ["cancelled"],
   paid: ["processing", "measuring", "cancelled", "refunded"],
   processing: ["measuring", "sewing", "shipped", "cancelled"],
   measuring: ["sewing", "cancelled"],
