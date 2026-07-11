@@ -8,6 +8,7 @@ import { api, useApi, ApiError } from "@/lib/api";
 import type { Paginated } from "@/lib/types";
 import { fmtDateTime } from "@/lib/format";
 import { cn } from "@/lib/cn";
+import { isPushEnabled } from "@/lib/push";
 import { useToast } from "@/components/ui/toast";
 
 interface NotificationRow {
@@ -34,12 +35,35 @@ export function NotificationBell() {
   );
   const unread = countData?.count ?? 0;
 
-  // Only fetch the actual list while the dropdown is open (SWR key = null skips it).
+  // Poll the actual list at all times (not just while the dropdown is open —
+  // the backend orders unread-first, so the first page is what we need both
+  // to render the dropdown instantly on open AND to detect genuinely-new
+  // notifications for the OS-level browser Notification below).
   const { data, mutate } = useApi<Paginated<NotificationRow>>(
-    open ? "/notifications/?page_size=15" : null,
-    { refreshInterval: open ? 20000 : 0 }
+    "/notifications/?page_size=15",
+    { refreshInterval: open ? 20000 : 30000 }
   );
   const rows = data?.results ?? [];
+
+  // Track notification ids we've already surfaced so a browser Notification
+  // only fires for genuinely new arrivals — never for the pre-existing
+  // unread backlog on first load in this session.
+  const seenIds = useRef<Set<number> | null>(null);
+  useEffect(() => {
+    if (!data) return;
+    const items = data.results ?? [];
+    if (seenIds.current === null) {
+      seenIds.current = new Set(items.map((n) => n.id));
+      return;
+    }
+    const fresh = items.filter((n) => !n.is_read && !seenIds.current!.has(n.id));
+    if (fresh.length > 0 && isPushEnabled()) {
+      for (const n of fresh) {
+        new Notification(n.title, { body: n.body, tag: String(n.id) });
+      }
+    }
+    items.forEach((n) => seenIds.current!.add(n.id));
+  }, [data]);
 
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
@@ -78,7 +102,13 @@ export function NotificationBell() {
   return (
     <div className="relative" ref={ref}>
       <button
-        onClick={() => setOpen((v) => !v)}
+        onClick={() =>
+          setOpen((v) => {
+            const next = !v;
+            if (next) mutate();
+            return next;
+          })
+        }
         title="Bildirishnomalar"
         aria-label="Bildirishnomalar"
         className="relative rounded-full border border-transparent p-2.5 text-navy-500 transition-colors hover:border-gold/20 hover:bg-gold/10 hover:text-gold-dark"

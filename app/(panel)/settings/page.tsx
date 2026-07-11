@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { MessageCircle, ShieldCheck } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Bell, MessageCircle, ShieldCheck } from "lucide-react";
 
 import { api, useApi, ApiError } from "@/lib/api";
 import type { AuthUser, Role } from "@/lib/types";
+import { PUSH_ENABLED_KEY, isPushSupported } from "@/lib/push";
 
 import { Card, CardHeader, Badge, Switch, Loading, ErrorState } from "@/components/ui";
 import { PageHeader } from "@/components/ui/page";
@@ -24,6 +25,57 @@ export default function SettingsPage() {
   const { data: me, error, isLoading, mutate } = useApi<AuthUser>("/auth/me/");
   const [toggling, setToggling] = useState(false);
   const [showLinkHelp, setShowLinkHelp] = useState(false);
+
+  // Browser push permission state — read on mount (client-only; SSR has no
+  // Notification global). "unsupported" covers browsers without the API.
+  const [pushPermission, setPushPermission] = useState<NotificationPermission | "unsupported">(
+    "default"
+  );
+  const [pushEnabled, setPushEnabled] = useState(false);
+
+  useEffect(() => {
+    if (!isPushSupported()) {
+      setPushPermission("unsupported");
+      return;
+    }
+    setPushPermission(Notification.permission);
+    setPushEnabled(
+      Notification.permission === "granted" &&
+        window.localStorage.getItem(PUSH_ENABLED_KEY) === "1"
+    );
+  }, []);
+
+  async function togglePush(next: boolean) {
+    if (!isPushSupported()) return;
+
+    if (!next) {
+      window.localStorage.setItem(PUSH_ENABLED_KEY, "0");
+      setPushEnabled(false);
+      notify("Brauzer bildirishnomalari o'chirildi", "success");
+      return;
+    }
+
+    let permission = Notification.permission;
+    if (permission === "default") {
+      permission = await Notification.requestPermission();
+      setPushPermission(permission);
+    }
+
+    if (permission === "granted") {
+      window.localStorage.setItem(PUSH_ENABLED_KEY, "1");
+      setPushEnabled(true);
+      notify("Brauzer bildirishnomalari yoqildi", "success");
+    } else {
+      window.localStorage.setItem(PUSH_ENABLED_KEY, "0");
+      setPushEnabled(false);
+      notify(
+        permission === "denied"
+          ? "Ruxsat berilmadi — brauzer sozlamalaridan sayt uchun bildirishnomaga ruxsat bering"
+          : "Ruxsat berilmadi",
+        "error"
+      );
+    }
+  }
 
   async function toggleTelegram(next: boolean) {
     setToggling(true);
@@ -119,6 +171,39 @@ export default function SettingsPage() {
                   </ol>
                 </div>
               )}
+            </div>
+          </Card>
+
+          <Card className="max-w-xl">
+            <CardHeader
+              title="Brauzer bildirishnomalari"
+              subtitle="Yangi buyurtma va holat o'zgarishlari haqida shu qurilma brauzerida xabar oling"
+              icon={<Bell className="size-5" />}
+            />
+            <div className="space-y-4 px-5 pb-5">
+              <div className="flex items-center justify-between gap-4 rounded-xl border border-navy-100 bg-navy-50/50 px-4 py-3">
+                <div>
+                  <p className="text-sm font-medium text-navy-800">
+                    {pushPermission === "unsupported"
+                      ? "Qo'llab-quvvatlanmaydi"
+                      : pushEnabled
+                        ? "Yoqilgan"
+                        : "O'chirilgan"}
+                  </p>
+                  <p className="text-xs text-navy-400">
+                    {pushPermission === "unsupported"
+                      ? "Bu brauzer bildirishnomalarni qo'llab-quvvatlamaydi"
+                      : pushPermission === "denied"
+                        ? "Bloklangan — brauzer sozlamalaridan sayt uchun ruxsat bering"
+                        : "Yangi buyurtma va holat o'zgarishi haqida shu qurilmada xabar keladi"}
+                  </p>
+                </div>
+                <Switch
+                  checked={pushEnabled}
+                  disabled={pushPermission === "unsupported" || pushPermission === "denied"}
+                  onChange={togglePush}
+                />
+              </div>
             </div>
           </Card>
         </div>
