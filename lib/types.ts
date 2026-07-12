@@ -7,7 +7,7 @@ export interface Paginated<T> {
   results: T[];
 }
 
-export type Role = "customer" | "manager" | "admin";
+export type Role = "customer" | "employee" | "manager" | "admin";
 export type Lang = "uz" | "ru";
 
 export type OrderStatus =
@@ -27,8 +27,12 @@ export interface AuthUser {
   id: number;
   phone: string;
   full_name: string;
+  email?: string;
   role: Role;
   language: Lang;
+  is_phone_verified?: boolean;
+  telegram_enabled?: boolean;
+  date_joined?: string;
 }
 
 export interface AdminUser {
@@ -128,6 +132,17 @@ export interface Room {
   sort_order?: number;
 }
 
+/** Mato/material — mahsulotga bir nechta biriktiriladi. */
+export interface Material {
+  id: number;
+  slug: string;
+  name: string;
+  description?: string;
+  is_active?: boolean;
+  sort_order?: number;
+  products_count?: number;
+}
+
 export interface ProductVariant {
   id: number;
   name: string;
@@ -155,7 +170,6 @@ export interface AdminProduct {
   name_ru: string;
   description_uz: string;
   description_ru: string;
-  material: string;
   starting_price: string;
   price_per_m2: string;
   discount_percent: number;
@@ -165,6 +179,8 @@ export interface AdminProduct {
   badges_detail: Badge[];
   styles?: number[];
   rooms?: number[];
+  materials?: number[];
+  materials_detail?: Material[];
   colors?: number[];
   colors_detail?: Color[];
   size_mode?: ProductType;
@@ -227,6 +243,34 @@ export interface Overview {
   measurement_requests: number;
   conversion: number;
   deltas: Record<string, number>;
+  // Katalog bo'yicha umumiy KPIlar (Mahsulot statistikasi sahifasi uchun) —
+  // shu endpoint javobida doim bor, faqat boshqaruv paneli ulardan foydalanmaydi.
+  products?: number;
+  total_views?: number;
+  total_orders?: number;
+  total_revenue?: number;
+  total_customers?: number;
+}
+
+/** Bitta mahsulot bo'yicha analitika qatori — GET /admin/stats/products/. */
+export interface ProductStatRow {
+  id: number;
+  slug: string;
+  name: string;
+  main_image: string | null;
+  category: string | null;
+  views_count: number;
+  views_7d: number;
+  views_30d: number;
+  favorites_count: number;
+  orders_count: number;
+  sold_qty: number;
+  revenue: number;
+  reviews_count: number;
+  rating_avg: string | number;
+  /** 0..1 nisbat — foizga o'zi ko'paytiriladi (1.0dan oshishi mumkin). */
+  conversion: number;
+  top_variant: { name: string; sold_qty: number } | null;
 }
 
 export interface SalesPoint {

@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { NAV } from "@/lib/nav";
+import { filterNav } from "@/lib/nav";
+import { useAuth } from "@/lib/auth";
 import { Icon } from "./Icon";
 import { cn } from "@/lib/cn";
 
@@ -20,6 +21,8 @@ export function Sidebar({
   onClose: () => void;
 }) {
   const pathname = usePathname();
+  const { user } = useAuth();
+  const groups = useMemo(() => filterNav(user?.role), [user?.role]);
 
   // Which titled groups are collapsed (by title). Default: all expanded.
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
@@ -50,8 +53,13 @@ export function Sidebar({
     pathname === href || pathname.startsWith(href + "/");
 
   // Title of the group that holds the active route (so we can force it open).
+<<<<<<< HEAD
   const activeGroupTitle = NAV.find(
     (g) => g.title && g.items.some((i) => isActive(i.href)),
+=======
+  const activeGroupTitle = groups.find(
+    (g) => g.title && g.items.some((i) => isActive(i.href))
+>>>>>>> 62f310d85be073c19819ce9293af310209b3ed61
   )?.title;
 
   const toggle = (title: string) =>
@@ -86,7 +94,7 @@ export function Sidebar({
         </div>
 
         <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1.5">
-          {NAV.map((group, gi) => {
+          {groups.map((group, gi) => {
             const renderLink = (item: (typeof group.items)[number]) => {
               const active = isActive(item.href);
               return (

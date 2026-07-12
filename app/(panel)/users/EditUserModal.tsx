@@ -113,6 +113,7 @@ export function EditUserModal({
               }
             >
               <option value="customer">Mijoz</option>
+              <option value="employee">Xodim</option>
               <option value="manager">Menejer</option>
               <option value="admin">Admin</option>
             </Select>

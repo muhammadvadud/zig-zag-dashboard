@@ -4,18 +4,32 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icon } from "./Icon";
 import { cn } from "@/lib/cn";
+import { useAuth } from "@/lib/auth";
+import type { Role } from "@/lib/types";
 
 // Primary destinations surfaced as a phone bottom tab bar.
 // The full navigation stays reachable via the "Ko'proq" button (opens the sidebar).
-const ITEMS = [
+const ITEMS: { label: string; href: string; icon: string; roles?: Role[] }[] = [
   { label: "Asosiy", href: "/dashboard", icon: "LayoutDashboard" },
-  { label: "Buyurtma", href: "/orders", icon: "ClipboardList" },
+  {
+    label: "Buyurtma",
+    href: "/orders",
+    icon: "ClipboardList",
+    roles: ["employee", "manager", "admin"],
+  },
   { label: "Mahsulot", href: "/products", icon: "Package" },
   { label: "Mijozlar", href: "/users", icon: "Users" },
 ];
+const STAFF_DEFAULT: Role[] = ["manager", "admin"];
 
 export function BottomNav({ onMenu }: { onMenu: () => void }) {
   const pathname = usePathname();
+  const { user } = useAuth();
+  const items = ITEMS.filter((it) =>
+    user?.role === "manager" || user?.role === "admin"
+      ? true
+      : (it.roles ?? STAFF_DEFAULT).includes(user?.role as Role)
+  );
   const isActive = (href: string) =>
     pathname === href || pathname.startsWith(href + "/");
 
@@ -26,7 +40,7 @@ export function BottomNav({ onMenu }: { onMenu: () => void }) {
       aria-label="Asosiy navigatsiya"
     >
       <div className="mx-auto flex max-w-md items-stretch justify-around px-1">
-        {ITEMS.map((it) => {
+        {items.map((it) => {
           const active = isActive(it.href);
           return (
             <Link

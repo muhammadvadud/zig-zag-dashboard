@@ -18,9 +18,10 @@ import { EditUserModal } from "./EditUserModal";
 
 const PAGE_SIZE = 20;
 
-const ROLE_META: Record<Role, { label: string; color: "gold" | "blue" | "navy" }> = {
+const ROLE_META: Record<Role, { label: string; color: "gold" | "blue" | "navy" | "green" }> = {
   admin: { label: "Admin", color: "gold" },
   manager: { label: "Menejer", color: "blue" },
+  employee: { label: "Xodim", color: "green" },
   customer: { label: "Mijoz", color: "navy" },
 };
 
@@ -119,6 +120,7 @@ export default function UsersPage() {
         >
           <option value="">Hammasi (rol)</option>
           <option value="customer">Mijoz</option>
+          <option value="employee">Xodim</option>
           <option value="manager">Menejer</option>
           <option value="admin">Admin</option>
         </Select>

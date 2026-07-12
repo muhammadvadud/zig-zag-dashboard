@@ -9,7 +9,7 @@ interface AuthCtx {
   user: AuthUser | null;
   loading: boolean;
   requestOtp: (phone: string) => Promise<{ debug_code?: string }>;
-  verifyOtp: (phone: string, code: string) => Promise<void>;
+  verifyOtp: (phone: string, code: string) => Promise<AuthUser>;
   logout: () => void;
 }
 
@@ -41,6 +41,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     );
     tokens.set(data.access, data.refresh, data.user);
     setUser(data.user);
+    return data.user;
   }
 
   function logout() {

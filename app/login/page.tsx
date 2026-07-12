@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
+import { homeFor } from "@/lib/nav";
 import { Button, Field, Input } from "@/components/ui";
 import { useToast } from "@/components/ui/toast";
 import { ApiError } from "@/lib/api";
@@ -18,7 +19,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (user) router.replace("/dashboard");
+    if (user) router.replace(homeFor(user.role));
   }, [user, router]);
 
   async function onRequest(e: React.FormEvent) {
@@ -44,8 +45,8 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      await verifyOtp(phone.trim(), code.trim());
-      router.replace("/dashboard");
+      const loggedInUser = await verifyOtp(phone.trim(), code.trim());
+      router.replace(homeFor(loggedInUser.role));
     } catch (err) {
       notify((err as ApiError).message || "Kod noto'g'ri", "error");
     } finally {
