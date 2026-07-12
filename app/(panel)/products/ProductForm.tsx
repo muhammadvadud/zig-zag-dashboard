@@ -243,7 +243,7 @@ const PRESET_COLORS = [
 ];
 
 function ColorPicker({ value, onChange }: { value: string; onChange: (hex: string) => void }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
   const wrapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -256,7 +256,7 @@ function ColorPicker({ value, onChange }: { value: string; onChange: (hex: strin
   }, [open]);
 
   return (
-    <div className="relative" ref={wrapRef}>
+    <div className="" ref={wrapRef}>
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
@@ -267,7 +267,7 @@ function ColorPicker({ value, onChange }: { value: string; onChange: (hex: strin
       </button>
 
       {open && (
-        <div className="absolute z-20 mt-2 w-60 rounded-2xl border border-navy-100 bg-white p-3 shadow-xl">
+        <div className="absolute z-30 mt-2 w-60 rounded-2xl border border-navy-100 bg-white p-3 shadow-xl">
           <div className="grid grid-cols-5 gap-2">
             {PRESET_COLORS.map((hex) => (
               <button

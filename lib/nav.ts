@@ -12,12 +12,26 @@ export interface NavGroup {
 export const NAV: NavGroup[] = [
   {
     title: "",
-    items: [{ label: "Boshqaruv paneli", href: "/dashboard", icon: "LayoutDashboard" }],
+    items: [
+      {
+        label: "Boshqaruv paneli",
+        href: "/dashboard",
+        icon: "LayoutDashboard",
+      },
+    ],
   },
   {
     title: "FOYDALANUVCHILAR",
+    items: [{ label: "Foydalanuvchilar", href: "/users", icon: "Users" }],
+  },
+  {
+    title: "SAVDO",
     items: [
-      { label: "Foydalanuvchilar", href: "/users", icon: "Users" },
+      { label: "Buyurtmalar", href: "/orders", icon: "ClipboardList" },
+      { label: "To'lovlar", href: "/payments", icon: "CreditCard" },
+      { label: "Tariflar", href: "/tariffs", icon: "Tag" },
+      { label: "Savatlar", href: "/carts", icon: "ShoppingCart" },
+      { label: "O'lchov so'rovlari", href: "/measurements", icon: "Ruler" },
     ],
   },
   {
@@ -35,16 +49,6 @@ export const NAV: NavGroup[] = [
       { label: "Bannerlar", href: "/banners", icon: "Image" },
       { label: "Hero matnlari", href: "/hero", icon: "Type" },
       { label: "FAQ", href: "/faq", icon: "HelpCircle" },
-    ],
-  },
-  {
-    title: "SAVDO",
-    items: [
-      { label: "Tariflar", href: "/tariffs", icon: "Tag" },
-      { label: "Savatlar", href: "/carts", icon: "ShoppingCart" },
-      { label: "Buyurtmalar", href: "/orders", icon: "ClipboardList" },
-      { label: "O'lchov so'rovlari", href: "/measurements", icon: "Ruler" },
-      { label: "To'lovlar", href: "/payments", icon: "CreditCard" },
     ],
   },
   {
