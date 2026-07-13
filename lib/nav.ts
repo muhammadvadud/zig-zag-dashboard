@@ -38,11 +38,15 @@ export const NAV: NavGroup[] = [
   {
     title: "SAVDO",
     items: [
-      { label: "Buyurtmalar", href: "/orders", icon: "ClipboardList" },
-      { label: "To'lovlar", href: "/payments", icon: "CreditCard" },
-      { label: "Tariflar", href: "/tariffs", icon: "Tag" },
+      {
+        label: "Buyurtmalar",
+        href: "/orders",
+        icon: "ClipboardList",
+        roles: ["employee", "manager", "admin"],
+      },
       { label: "Savatlar", href: "/carts", icon: "ShoppingCart" },
       { label: "O'lchov so'rovlari", href: "/measurements", icon: "Ruler" },
+      { label: "To'lovlar", href: "/payments", icon: "CreditCard" },
     ],
   },
   {
@@ -57,27 +61,17 @@ export const NAV: NavGroup[] = [
       { label: "Ranglar", href: "/colors", icon: "Paintbrush" },
       { label: "Nishonlar", href: "/badges", icon: "BadgeCheck" },
       { label: "Sharhlar", href: "/reviews", icon: "Star" },
-      { label: "Kolleksiyalar", href: "/collections", icon: "Layers" },
-      { label: "Bannerlar", href: "/banners", icon: "Image" },
-      { label: "Hero matnlari", href: "/hero", icon: "Type" },
       { label: "FAQ", href: "/faq", icon: "HelpCircle" },
     ],
   },
+
   {
-<<<<<<< HEAD
-=======
-    title: "SAVDO",
+    title: "UI",
     items: [
       { label: "Tariflar", href: "/tariffs", icon: "Tag" },
-      { label: "Savatlar", href: "/carts", icon: "ShoppingCart" },
-      {
-        label: "Buyurtmalar",
-        href: "/orders",
-        icon: "ClipboardList",
-        roles: ["employee", "manager", "admin"],
-      },
-      { label: "O'lchov so'rovlari", href: "/measurements", icon: "Ruler" },
-      { label: "To'lovlar", href: "/payments", icon: "CreditCard" },
+      { label: "Kolleksiyalar", href: "/collections", icon: "Layers" },
+      { label: "Bannerlar", href: "/banners", icon: "Image" },
+      { label: "Hero matnlari", href: "/hero", icon: "Type" },
     ],
   },
   {
@@ -85,7 +79,6 @@ export const NAV: NavGroup[] = [
     items: [{ label: "Statistika", href: "/statistics", icon: "BarChart3" }],
   },
   {
->>>>>>> 62f310d85be073c19819ce9293af310209b3ed61
     title: "AI",
     items: [
       { label: "Suhbatlar", href: "/ai/conversations", icon: "MessagesSquare" },
