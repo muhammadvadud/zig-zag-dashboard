@@ -53,13 +53,8 @@ export function Sidebar({
     pathname === href || pathname.startsWith(href + "/");
 
   // Title of the group that holds the active route (so we can force it open).
-<<<<<<< HEAD
-  const activeGroupTitle = NAV.find(
-    (g) => g.title && g.items.some((i) => isActive(i.href)),
-=======
   const activeGroupTitle = groups.find(
-    (g) => g.title && g.items.some((i) => isActive(i.href))
->>>>>>> 62f310d85be073c19819ce9293af310209b3ed61
+    (g) => g.title && g.items.some((i) => isActive(i.href)),
   )?.title;
 
   const toggle = (title: string) =>
