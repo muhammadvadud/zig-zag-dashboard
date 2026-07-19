@@ -23,6 +23,19 @@ export type OrderStatus =
 
 export type PaymentStatus = "unpaid" | "paid" | "failed" | "refunded";
 
+export interface OrderContact {
+  full_name: string;
+  phone: string;
+}
+
+export interface OrderAddress {
+  id: number;
+  city: string;       // region (viloyat)
+  district: string;   // city (tuman)
+  address: string;    // ko'cha + uy
+  landmark: string;   // mo'ljal
+}
+
 export interface AuthUser {
   id: number;
   phone: string;
@@ -60,7 +73,6 @@ export interface OrderItem {
   quantity: number;
   width_cm: number | null;
   height_cm: number | null;
-  service_tariff: string | null;
   line_total: string;
 }
 
@@ -73,13 +85,17 @@ export interface AdminOrderRow {
   subtotal: string;
   discount: string;
   delivery_fee: string;
-  customer: string;
+  customer: OrderContact;
+  recipient: OrderContact | null;
+  service_tariff: string | null;
   created_at: string;
   items_count: number;
 }
 
 export interface OrderDetail extends AdminOrderRow {
   comment: string;
+  delivery_method: string | null;
+  address: OrderAddress | null;
   items: OrderItem[];
 }
 

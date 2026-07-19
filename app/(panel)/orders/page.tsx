@@ -6,7 +6,7 @@ import { Package, User, Calendar } from "lucide-react";
 
 import { cn } from "@/lib/cn";
 import { useApi } from "@/lib/api";
-import type { AdminOrderRow, OrderStatus, Paginated } from "@/lib/types";
+import type { AdminOrderRow, OrderStatus, Paginated, StatusSlice } from "@/lib/types";
 import { money, fmtDate } from "@/lib/format";
 
 import {
@@ -31,32 +31,29 @@ const PAYMENT_OPTIONS = [
   { value: "refunded", label: "Qaytarilgan" },
 ];
 
-type StatusCounts = Record<OrderStatus, number>;
-
 interface Tab {
   key: string;
   label: string;
-  statuses: OrderStatus[];
+  status?: OrderStatus;
 }
 
-// "Hammasi" has no status filter (statuses: []); every other tab groups a
-// few backend statuses under one human-friendly bucket.
 const TABS: Tab[] = [
-  { key: "all", label: "Hammasi", statuses: [] },
-  { key: "new", label: "Yangi", statuses: ["pending", "paid"] },
-  { key: "in_progress", label: "Jarayonda", statuses: ["processing", "measuring"] },
-  { key: "sewing", label: "Tikuvda", statuses: ["sewing"] },
-  { key: "shipped", label: "Jo'natildi", statuses: ["shipped"] },
-  { key: "completed", label: "Yakunlangan", statuses: ["completed"] },
-  { key: "cancelled", label: "Bekor qilingan", statuses: ["cancelled", "refunded"] },
+  { key: "all", label: "Hammasi" },
+  { key: "pending", label: "Kutilmoqda", status: "pending" },
+  { key: "paid", label: "To'langan", status: "paid" },
+  { key: "processing", label: "Jarayonda", status: "processing" },
+  { key: "measuring", label: "O'lchovda", status: "measuring" },
+  { key: "sewing", label: "Tikuvda", status: "sewing" },
+  { key: "shipped", label: "Jo'natildi", status: "shipped" },
+  { key: "completed", label: "Yakunlangan", status: "completed" },
+  { key: "cancelled", label: "Bekor qilingan", status: "cancelled" },
+  { key: "refunded", label: "Qaytarilgan", status: "refunded" },
 ];
 
-function tabCount(tab: Tab, counts: StatusCounts | undefined): number {
-  if (!counts) return 0;
-  if (tab.statuses.length === 0) {
-    return Object.values(counts).reduce((sum, n) => sum + n, 0);
-  }
-  return tab.statuses.reduce((sum, s) => sum + (counts[s] ?? 0), 0);
+function tabCount(tab: Tab, items: StatusSlice[] | undefined): number {
+  if (!items) return 0;
+  if (!tab.status) return items.reduce((sum, item) => sum + item.count, 0);
+  return items.find((item) => item.status === tab.status)?.count ?? 0;
 }
 
 export default function OrdersPage() {
@@ -66,12 +63,12 @@ export default function OrdersPage() {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
 
-  const { data: counts } = useApi<StatusCounts>("/admin/orders/status-counts/", {
+  const { data: statusStats } = useApi<{ items: StatusSlice[] }>("/admin/stats/orders-by-status/", {
     refreshInterval: 30000,
   });
 
   const qs = new URLSearchParams();
-  if (tab.statuses.length > 0) qs.set("status__in", tab.statuses.join(","));
+  if (tab.status) qs.set("status", tab.status);
   if (paymentStatus) qs.set("payment_status", paymentStatus);
   if (search) qs.set("search", search);
   qs.set("page", String(page));
@@ -95,7 +92,7 @@ export default function OrdersPage() {
       <div className="flex items-center gap-2 overflow-x-auto pb-1">
         {TABS.map((t) => {
           const active = t.key === tab.key;
-          const n = tabCount(t, counts);
+          const n = tabCount(t, statusStats?.items);
           return (
             <button
               key={t.key}
@@ -189,7 +186,7 @@ export default function OrdersPage() {
                   </h3>
                   <p className="mt-0.5 flex items-center gap-1.5 truncate text-sm text-navy-400">
                     <User className="size-3.5 shrink-0" />
-                    {o.customer || "—"}
+                    {o.customer?.full_name || o.customer?.phone || "—"}
                   </p>
                 </div>
 

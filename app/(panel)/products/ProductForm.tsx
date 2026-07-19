@@ -243,6 +243,8 @@ const PRESET_COLORS = [
   "#3b82f6", "#8b5cf6", "#ec4899", "#78350f", "#164e63",
 ];
 
+
+
 function ColorPicker({ value, onChange }: { value: string; onChange: (hex: string) => void }) {
   const [open, setOpen] = useState(true);
   const wrapRef = useRef<HTMLDivElement>(null);
