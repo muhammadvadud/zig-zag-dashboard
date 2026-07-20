@@ -237,78 +237,6 @@ function ImageCard({
 }
 
 /* ---- modern color picker (swatch trigger + preset palette popover) ---- */
-const PRESET_COLORS = [
-  "#c9a769", "#1a2a4a", "#ffffff", "#000000", "#94a3b8",
-  "#ef4444", "#f97316", "#eab308", "#22c55e", "#06b6d4",
-  "#3b82f6", "#8b5cf6", "#ec4899", "#78350f", "#164e63",
-];
-
-
-
-function ColorPicker({ value, onChange }: { value: string; onChange: (hex: string) => void }) {
-  const [open, setOpen] = useState(true);
-  const wrapRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    function onDocDown(e: MouseEvent) {
-      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false);
-    }
-    document.addEventListener("mousedown", onDocDown);
-    return () => document.removeEventListener("mousedown", onDocDown);
-  }, [open]);
-
-  return (
-    <div className="" ref={wrapRef}>
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        className="flex h-10 items-center gap-2 rounded-xl border border-navy-200 bg-white px-3 shadow-sm transition-colors hover:border-gold/50"
-      >
-        <span className="size-5 shrink-0 rounded-full border border-black/10 shadow-inner" style={{ backgroundColor: value }} />
-        <span className="text-sm font-medium uppercase tracking-wide text-navy-600">{value}</span>
-      </button>
-
-      {open && (
-        <div className="absolute z-30 mt-2 w-60 rounded-2xl border border-navy-100 bg-white p-3 shadow-xl">
-          <div className="grid grid-cols-5 gap-2">
-            {PRESET_COLORS.map((hex) => (
-              <button
-                key={hex}
-                type="button"
-                onClick={() => onChange(hex)}
-                className={cn(
-                  "size-7 rounded-full border transition-transform hover:scale-110",
-                  value.toLowerCase() === hex ? "ring-2 ring-gold ring-offset-1" : "border-black/10"
-                )}
-                style={{ backgroundColor: hex }}
-                title={hex}
-              />
-            ))}
-          </div>
-          <div className="mt-3 flex items-center gap-2 border-t border-navy-100 pt-3">
-            <label className="relative flex size-9 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-lg border border-navy-200">
-              <span className="pointer-events-none absolute inset-0" style={{ backgroundColor: value }} />
-              <input
-                type="color"
-                value={value}
-                onChange={(e) => onChange(e.target.value)}
-                className="absolute inset-0 size-full cursor-pointer opacity-0"
-              />
-            </label>
-            <input
-              value={value}
-              onChange={(e) => onChange(e.target.value)}
-              className="h-9 flex-1 rounded-lg border border-navy-200 px-2 text-sm uppercase text-navy-700 focus:border-gold/60 focus:outline-none"
-              maxLength={7}
-            />
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
 /* ============================================================
    Main ProductForm
    ============================================================ */
@@ -721,7 +649,21 @@ export function ProductForm({ product }: { product?: AdminProduct | null }) {
                   <Input value={newColorName} onChange={(e) => setNewColorName(e.target.value)} placeholder="Masalan: Bej" />
                 </Field>
                 <Field label="Rang">
-                  <ColorPicker value={newColorHex} onChange={setNewColorHex} />
+                  <div className="flex h-10 items-center gap-2">
+                    <input
+                      type="color"
+                      value={newColorHex}
+                      onChange={(e) => setNewColorHex(e.target.value)}
+                      className="size-10 cursor-pointer rounded-xl border border-navy-200 bg-white p-0.5 shadow-sm"
+                    />
+                    <Input
+                      value={newColorHex}
+                      onChange={(e) => setNewColorHex(e.target.value)}
+                      placeholder="#aabbcc"
+                      className="w-24 text-sm uppercase"
+                      maxLength={7}
+                    />
+                  </div>
                 </Field>
                 <Button type="button" variant="outline" loading={creatingColor}
                   onClick={createColor} disabled={!newColorName.trim()}>
