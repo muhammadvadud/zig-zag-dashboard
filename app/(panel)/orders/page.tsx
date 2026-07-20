@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Package, User, Calendar } from "lucide-react";
+import { Package, User, Calendar, RefreshCw } from "lucide-react";
 
 import { cn } from "@/lib/cn";
 import { useApi } from "@/lib/api";
@@ -18,6 +18,7 @@ import {
   ErrorState,
   Loading,
   EmptyState,
+  Button,
 } from "@/components/ui";
 import { Pagination } from "@/components/ui/table";
 import { PageHeader, SearchInput } from "@/components/ui/page";
@@ -63,7 +64,7 @@ export default function OrdersPage() {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
 
-  const { data: statusStats } = useApi<{ items: StatusSlice[] }>("/admin/stats/orders-by-status/", {
+  const { data: statusStats, mutate: mutateStats } = useApi<{ items: StatusSlice[] }>("/admin/stats/orders-by-status/", {
     refreshInterval: 30000,
   });
 
@@ -73,9 +74,32 @@ export default function OrdersPage() {
   if (search) qs.set("search", search);
   qs.set("page", String(page));
 
-  const { data, error, isLoading } = useApi<Paginated<AdminOrderRow>>(
-    `/admin/orders/?${qs.toString()}`
+  const { data, error, isLoading, mutate: mutateOrders } = useApi<Paginated<AdminOrderRow>>(
+    `/admin/orders/?${qs.toString()}`,
+    {
+      revalidateOnMount: true,
+      revalidateIfStale: true,
+    }
   );
+
+  const [refreshing, setRefreshing] = useState(false);
+
+  async function handleRefresh() {
+    setRefreshing(true);
+    try {
+      await Promise.all([mutateOrders(), mutateStats()]);
+    } catch (e) {
+      console.error("Refresh error", e);
+    } finally {
+      setRefreshing(false);
+    }
+  }
+
+  // Refetch data on mount/focus to ensure unviewed badges are updated in real-time
+  useEffect(() => {
+    mutateOrders();
+    mutateStats();
+  }, [mutateOrders, mutateStats]);
 
   const rows = data?.results ?? [];
 
@@ -86,7 +110,20 @@ export default function OrdersPage() {
 
   return (
     <div className="space-y-5">
-      <PageHeader title="Buyurtmalar" />
+      <PageHeader
+        title="Buyurtmalar"
+        actions={
+          <Button
+            variant="primary"
+            onClick={handleRefresh}
+            loading={refreshing || isLoading}
+            className="flex items-center gap-1.5 shadow-sm"
+          >
+            <RefreshCw className="size-4" />
+            Yangilash
+          </Button>
+        }
+      />
 
       {/* ---- Status tabs ---- */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1">
@@ -151,7 +188,7 @@ export default function OrdersPage() {
             <ErrorState error={error} />
           </div>
         </Card>
-      ) : isLoading ? (
+      ) : isLoading && !refreshing ? (
         <Card>
           <Loading />
         </Card>
@@ -162,46 +199,57 @@ export default function OrdersPage() {
       ) : (
         <>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {rows.map((o) => (
-              <button
-                key={o.order_number}
-                onClick={() => router.push(`/orders/${o.order_number}`)}
-                className="group relative overflow-hidden rounded-2xl border border-navy-100/80 bg-white p-5 text-left shadow-soft transition-all hover:-translate-y-0.5 hover:border-gold/40 hover:shadow-card-hover"
-              >
-                <div className="pointer-events-none absolute -right-8 -top-8 size-24 rounded-full bg-gradient-to-br from-gold/15 to-transparent blur-xl" />
+            {rows.map((o) => {
+              const isUnviewed = o.viewed_order === false || o.viewed_status === false;
+              return (
+                <button
+                  key={o.order_number}
+                  onClick={() => router.push(`/orders/${o.order_number}`)}
+                  className="group relative overflow-hidden rounded-2xl border border-navy-100/80 bg-white p-5 text-left shadow-soft transition-all hover:-translate-y-0.5 hover:border-gold/40 hover:shadow-card-hover"
+                >
+                  <div className="pointer-events-none absolute -right-8 -top-8 size-24 rounded-full bg-gradient-to-br from-gold/15 to-transparent blur-xl" />
 
-                <div className="flex items-start justify-between gap-2">
-                  <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-gold/20 to-gold/5 text-gold-dark ring-1 ring-gold/20">
-                    <Package className="size-5" />
-                  </span>
-                  <div className="flex flex-col items-end gap-1.5">
-                    <StatusBadge status={o.status} />
-                    <PaymentBadge status={o.payment_status} />
-                  </div>
-                </div>
-
-                <div className="mt-4">
-                  <h3 className="truncate text-base font-semibold text-navy-800">
-                    {o.order_number}
-                  </h3>
-                  <p className="mt-0.5 flex items-center gap-1.5 truncate text-sm text-navy-400">
-                    <User className="size-3.5 shrink-0" />
-                    {o.customer?.full_name || o.customer?.phone || "—"}
-                  </p>
-                </div>
-
-                <div className="mt-4 flex items-center justify-between border-t border-navy-50 pt-3">
-                  <div className="flex items-center gap-3 text-xs text-navy-400">
-                    <Badge color="navy">{o.items_count} ta</Badge>
-                    <span className="flex items-center gap-1">
-                      <Calendar className="size-3.5" />
-                      {fmtDate(o.created_at)}
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-gold/20 to-gold/5 text-gold-dark ring-1 ring-gold/20">
+                      <Package className="size-5" />
                     </span>
+                    <div className="flex flex-col items-end gap-1.5">
+                      <StatusBadge status={o.status} />
+                      <PaymentBadge status={o.payment_status} />
+                    </div>
                   </div>
-                  <span className="text-sm font-semibold text-navy-800">{money(o.total)}</span>
-                </div>
-              </button>
-            ))}
+
+                  <div className="mt-4">
+                    <div className="flex items-center gap-1.5">
+                      {isUnviewed && (
+                        <span className="relative flex size-2 shrink-0">
+                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full size-2 bg-green-500" title="Yangi (Ko'rilmagan)"></span>
+                        </span>
+                      )}
+                      <h3 className="truncate text-base font-semibold text-navy-800">
+                        {o.order_number}
+                      </h3>
+                    </div>
+                    <p className="mt-0.5 flex items-center gap-1.5 truncate text-sm text-navy-400">
+                      <User className="size-3.5 shrink-0" />
+                      {o.customer?.full_name || o.customer?.phone || "—"}
+                    </p>
+                  </div>
+
+                  <div className="mt-4 flex items-center justify-between border-t border-navy-50 pt-3">
+                    <div className="flex items-center gap-3 text-xs text-navy-400">
+                      <Badge color="navy">{o.items_count} ta</Badge>
+                      <span className="flex items-center gap-1">
+                        <Calendar className="size-3.5" />
+                        {fmtDate(o.created_at)}
+                      </span>
+                    </div>
+                    <span className="text-sm font-semibold text-navy-800">{money(o.total)}</span>
+                  </div>
+                </button>
+              );
+            })}
           </div>
 
           <Card>

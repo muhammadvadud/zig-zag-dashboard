@@ -90,6 +90,8 @@ export interface AdminOrderRow {
   service_tariff: string | null;
   created_at: string;
   items_count: number;
+  viewed_order: boolean;
+  viewed_status?: boolean;
 }
 
 export interface OrderDetail extends AdminOrderRow {

@@ -50,6 +50,17 @@ export default function OrderDetailPage() {
     if (data?.status) setStatus(data.status);
   }, [data?.status]);
 
+  useEffect(() => {
+    if (orderNumber) {
+      api(`/admin/orders/${orderNumber}/`, {
+        method: "PATCH",
+        body: { viewed_order: true },
+      }).catch((err) => {
+        console.error("Failed to mark order as viewed:", err);
+      });
+    }
+  }, [orderNumber]);
+
   async function save() {
     if (!orderNumber || !status) return;
     setSaving(true);
@@ -89,8 +100,9 @@ export default function OrderDetailPage() {
     {
       key: "product_name_snapshot",
       header: "Mahsulot",
+      className: "!whitespace-normal min-w-[150px] max-w-[280px]",
       render: (it) => (
-        <span className="font-medium text-navy-800">
+        <span className="font-medium text-navy-800 block line-clamp-2" title={it.product_name_snapshot}>
           {it.product_name_snapshot}
         </span>
       ),
