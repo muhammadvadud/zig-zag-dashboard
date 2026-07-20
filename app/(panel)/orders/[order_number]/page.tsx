@@ -83,28 +83,35 @@ export default function OrderDetailPage() {
     {
       key: "image",
       header: "Rasm",
-      render: (it) =>
-        it.image ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={it.image}
-            alt={it.product_name_snapshot}
-            className="size-11 rounded-xl object-cover border border-navy-100 shadow-sm"
-          />
-        ) : (
-          <div className="size-11 rounded-xl bg-navy-50 border border-navy-100 flex items-center justify-center text-navy-300">
-            <Package className="size-5" />
-          </div>
-        ),
+      render: (it) => (
+        <Link href={`/orders/${orderNumber}/order-item/${it.product_slug}`} className="block hover:opacity-85 transition-opacity">
+          {it.image ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={it.image}
+              alt={it.product_name_snapshot}
+              className="size-11 rounded-xl object-cover border border-navy-100 shadow-sm"
+            />
+          ) : (
+            <div className="size-11 rounded-xl bg-navy-50 border border-navy-100 flex items-center justify-center text-navy-300">
+              <Package className="size-5" />
+            </div>
+          )}
+        </Link>
+      ),
     },
     {
       key: "product_name_snapshot",
       header: "Mahsulot",
       className: "!whitespace-normal min-w-[150px] max-w-[280px]",
       render: (it) => (
-        <span className="font-medium text-navy-800 block line-clamp-2" title={it.product_name_snapshot}>
+        <Link
+          href={`/orders/${orderNumber}/order-item/${it.product_slug}`}
+          className="font-semibold text-navy-800 hover:text-gold-dark transition-colors block line-clamp-2"
+          title={it.product_name_snapshot}
+        >
           {it.product_name_snapshot}
-        </span>
+        </Link>
       ),
     },
     {

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Bell, ClipboardList, Megaphone } from "lucide-react";
 
-import { api, useApi, ApiError } from "@/lib/api";
+import { api, useApi, ApiError, tokens, API_BASE } from "@/lib/api";
 import type { Paginated } from "@/lib/types";
 import { fmtDateTime } from "@/lib/format";
 import { cn } from "@/lib/cn";
@@ -27,23 +27,78 @@ export function NotificationBell() {
   const router = useRouter();
   const notify = useToast();
 
-  // Poll the lightweight unread-count endpoint regardless of whether the
-  // panel is open — this is what drives the badge.
   const { data: countData, mutate: mutateCount } = useApi<{ count: number }>(
-    "/notifications/unread-count/",
-    { refreshInterval: 30000 }
+    "/notifications/unread-count/"
   );
   const unread = countData?.count ?? 0;
 
-  // Poll the actual list at all times (not just while the dropdown is open —
-  // the backend orders unread-first, so the first page is what we need both
-  // to render the dropdown instantly on open AND to detect genuinely-new
-  // notifications for the OS-level browser Notification below).
   const { data, mutate } = useApi<Paginated<NotificationRow>>(
-    "/notifications/?page_size=15",
-    { refreshInterval: open ? 20000 : 30000 }
+    "/notifications/?page_size=15"
   );
   const rows = data?.results ?? [];
+
+  // Connect to WebSocket for real-time notification updates
+  useEffect(() => {
+    const token = tokens.access;
+    if (!token) return;
+
+    let wsUrl = "";
+    if (typeof window !== "undefined") {
+      let base = API_BASE;
+      if (!base.startsWith("http")) {
+        const loc = window.location;
+        const protocol = loc.protocol === "https:" ? "https:" : "http:";
+        base = `${protocol}//${loc.host}${base}`;
+      }
+      wsUrl = base.replace(/^http/, "ws").replace(/\/api\/v1\/?$/, "/ws/notifications/");
+      wsUrl = `${wsUrl}?token=${token}`;
+    }
+
+    if (!wsUrl) return;
+
+    let socket: WebSocket | null = null;
+    let reconnectTimeout: NodeJS.Timeout | null = null;
+    let shouldReconnect = true;
+
+    function connect() {
+      socket = new WebSocket(wsUrl);
+
+      socket.onmessage = (event) => {
+        try {
+          const msg = JSON.parse(event.data);
+          if (msg.type === "new_notification" || msg.type === "unread_count_update" || msg.type === "unread_count") {
+            mutateCount();
+            mutate();
+          }
+        } catch (e) {
+          console.error("Failed to parse WebSocket message:", e);
+        }
+      };
+
+      socket.onclose = (event) => {
+        socket = null;
+        if (shouldReconnect) {
+          reconnectTimeout = setTimeout(connect, 5000);
+        }
+      };
+
+      socket.onerror = (err) => {
+        console.error("WebSocket error:", err);
+      };
+    }
+
+    connect();
+
+    return () => {
+      shouldReconnect = false;
+      if (socket) {
+        socket.close();
+      }
+      if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout);
+      }
+    };
+  }, [mutate, mutateCount]);
 
   // Track notification ids we've already surfaced so a browser Notification
   // only fires for genuinely new arrivals — never for the pre-existing
