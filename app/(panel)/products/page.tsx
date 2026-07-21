@@ -75,10 +75,10 @@ export default function ProductsPage() {
           <img
             src={p.main_image}
             alt=""
-            className="size-11 rounded-lg border border-navy-100 object-cover"
+            className="w-12 h-12 rounded-lg border border-navy-100 object-cover"
           />
         ) : (
-          <div className="flex size-11 items-center justify-center rounded-lg border border-dashed border-navy-200 bg-navy-50/50 text-navy-300">
+          <div className="flex w-12 h-12 items-center justify-center rounded-lg border border-dashed border-navy-200 bg-navy-50/50 text-navy-300">
             <ImageOff className="size-4" />
           </div>
         ),
