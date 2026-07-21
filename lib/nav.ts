@@ -44,7 +44,6 @@ export const NAV: NavGroup[] = [
         icon: "ClipboardList",
         roles: ["employee", "manager", "admin"],
       },
-      { label: "Savatlar", href: "/carts", icon: "ShoppingCart" },
       { label: "O'lchov so'rovlari", href: "/measurements", icon: "Ruler" },
       { label: "To'lovlar", href: "/payments", icon: "CreditCard" },
     ],
