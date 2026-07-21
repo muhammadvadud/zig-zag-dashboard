@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Pencil, Trash2, Check, Circle, ArrowUp, ArrowDown } from "lucide-react";
+import { Plus, Pencil, Trash2, Star, ArrowUp, ArrowDown } from "lucide-react";
 import { useApi, api, ApiError } from "@/lib/api";
 import { Card, Button, Badge, ErrorState } from "@/components/ui";
 import { DataTable, type Column } from "@/components/ui/table";
@@ -98,32 +98,34 @@ export default function HeroPage() {
   const columns: Column<AdminHero>[] = [
     {
       key: "is_first",
-      header: "Asosiy (Front)",
+      header: "Asosiy",
       align: "center",
       render: (r) => {
         const index = rows.indexOf(r);
         const isMain = index === 0 && r.is_active;
         const loading = updatingId === r.id;
+
+        if (loading) {
+          return (
+            <div className="flex h-8 w-8 items-center justify-center">
+              <span className="size-4 animate-spin rounded-full border-2 border-gold border-t-transparent" />
+            </div>
+          );
+        }
+
         return (
           <button
             type="button"
-            disabled={isMain || loading}
+            disabled={isMain}
             onClick={() => makeFirst(r)}
-            className={cn(
-              "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold transition-all",
-              isMain
-                ? "bg-gold/15 text-gold-dark border border-gold/30 cursor-default"
-                : "bg-navy-50 text-navy-600 hover:bg-gold/10 hover:text-gold-dark border border-navy-100 hover:border-gold/20"
-            )}
+            className="flex size-8 items-center justify-center rounded-full transition-colors hover:bg-navy-50 disabled:hover:bg-transparent"
+            title={isMain ? "Asosiy matn" : "Asosiy qilish"}
           >
-            {loading ? (
-              <span className="size-3 animate-spin rounded-full border border-current border-t-transparent" />
-            ) : isMain ? (
-              <Check className="size-3" />
+            {isMain ? (
+              <Star className="size-5 fill-gold text-gold" />
             ) : (
-              <Circle className="size-3 opacity-40" />
+              <Star className="size-5 text-navy-300 transition-all hover:scale-110 hover:text-gold" />
             )}
-            <span>{isMain ? "Asosiy" : "Asosiy qilish"}</span>
           </button>
         );
       },
