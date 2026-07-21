@@ -87,9 +87,15 @@ export default function ProductsPage() {
       key: "name",
       header: "Nomi",
       render: (p) => (
-        <div>
-          <div className="font-medium text-navy-800">{p.name_uz}</div>
-          {p.name_ru && <div className="text-xs text-navy-400">{p.name_ru}</div>}
+        <div className="max-w-[200px] sm:max-w-[300px]">
+          <div className="font-medium text-navy-800 line-clamp-2 break-words" title={p.name_uz}>
+            {p.name_uz}
+          </div>
+          {p.name_ru && (
+            <div className="text-xs text-navy-400 line-clamp-2 break-words" title={p.name_ru}>
+              {p.name_ru}
+            </div>
+          )}
         </div>
       ),
     },
