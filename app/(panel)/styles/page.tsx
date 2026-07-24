@@ -49,14 +49,24 @@ export default function StylesPage() {
         ),
     },
     {
-      key: "name",
-      header: "Nomi",
-      render: (s) => <span className="font-medium text-navy-800">{s.name || "—"}</span>,
+      key: "name_uz",
+      header: "Nomi (UZ)",
+      render: (s) => <span className="font-medium text-navy-800">{s.name_uz || "—"}</span>,
     },
     {
-      key: "blurb",
-      header: "Tavsif",
-      render: (s) => <span className="text-navy-500">{truncate(s.blurb, 60)}</span>,
+      key: "name_ru",
+      header: "Nomi (RU)",
+      render: (s) => <span className="font-medium text-navy-800">{s.name_ru || "—"}</span>,
+    },
+    {
+      key: "blurb_uz",
+      header: "Tavsif (UZ)",
+      render: (s) => <span className="text-navy-500">{truncate(s.blurb_uz, 40)}</span>,
+    },
+    {
+      key: "blurb_ru",
+      header: "Tavsif (RU)",
+      render: (s) => <span className="text-navy-500">{truncate(s.blurb_ru, 40)}</span>,
     },
     {
       key: "is_active",
@@ -144,7 +154,7 @@ export default function StylesPage() {
         }
       >
         <p className="text-sm text-navy-600">
-          <b className="text-navy-800">{deleting?.name}</b> uslubini o'chirmoqchimisiz? Bu amalni
+          <b className="text-navy-800">{deleting?.name_uz}</b> uslubini o'chirmoqchimisiz? Bu amalni
           qaytarib bo'lmaydi.
         </p>
       </Modal>

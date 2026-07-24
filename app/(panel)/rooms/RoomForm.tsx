@@ -7,21 +7,24 @@ import { useToast } from "@/components/ui/toast";
 
 export interface Room {
   id: number;
-  name: string;
+  name_uz: string;
+  name_ru: string;
   slug?: string;
   sort_order?: number;
   is_active?: boolean;
 }
 
 type FormState = {
-  name: string;
+  name_uz: string;
+  name_ru: string;
   sort_order: string;
   is_active: boolean;
 };
 
 function initial(room?: Room | null): FormState {
   return {
-    name: room?.name ?? "",
+    name_uz: room?.name_uz ?? "",
+    name_ru: room?.name_ru ?? "",
     sort_order: room ? String(room.sort_order ?? 0) : "0",
     is_active: room?.is_active ?? true,
   };
@@ -50,13 +53,14 @@ export function RoomForm({
     e.preventDefault();
     setError(null);
 
-    if (!form.name.trim()) {
-      setError("Nomi majburiy");
+    if (!form.name_uz.trim()) {
+      setError("Nomi (UZ) majburiy");
       return;
     }
 
     const payload = {
-      name: form.name.trim(),
+      name_uz: form.name_uz.trim(),
+      name_ru: form.name_ru.trim(),
       sort_order: Number(form.sort_order) || 0,
       is_active: form.is_active,
     };
@@ -87,9 +91,14 @@ export function RoomForm({
         </div>
       )}
 
-      <Field label="Nomi">
-        <Input value={form.name} onChange={(e) => set("name", e.target.value)} />
-      </Field>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <Field label="Nomi (UZ)">
+          <Input value={form.name_uz} onChange={(e) => set("name_uz", e.target.value)} />
+        </Field>
+        <Field label="Nomi (RU)">
+          <Input value={form.name_ru} onChange={(e) => set("name_ru", e.target.value)} />
+        </Field>
+      </div>
 
       <Field label="Tartib">
         <Input

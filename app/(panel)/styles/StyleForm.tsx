@@ -7,25 +7,31 @@ import { useToast } from "@/components/ui/toast";
 
 export interface Style {
   id: number;
-  name: string;
+  name_uz: string;
+  name_ru: string;
   slug?: string;
-  blurb?: string;
+  blurb_uz?: string;
+  blurb_ru?: string;
   sort_order?: number;
   is_active?: boolean;
   image?: string | null;
 }
 
 type FormState = {
-  name: string;
-  blurb: string;
+  name_uz: string;
+  name_ru: string;
+  blurb_uz: string;
+  blurb_ru: string;
   sort_order: string;
   is_active: boolean;
 };
 
 function initial(style?: Style | null): FormState {
   return {
-    name: style?.name ?? "",
-    blurb: style?.blurb ?? "",
+    name_uz: style?.name_uz ?? "",
+    name_ru: style?.name_ru ?? "",
+    blurb_uz: style?.blurb_uz ?? "",
+    blurb_ru: style?.blurb_ru ?? "",
     sort_order: style ? String(style.sort_order ?? 0) : "0",
     is_active: style?.is_active ?? true,
   };
@@ -55,8 +61,8 @@ export function StyleForm({
     e.preventDefault();
     setError(null);
 
-    if (!form.name.trim()) {
-      setError("Nomi majburiy");
+    if (!form.name_uz.trim()) {
+      setError("Nomi (UZ) majburiy");
       return;
     }
 
@@ -64,8 +70,10 @@ export function StyleForm({
     try {
       if (imageFile) {
         const fd = new FormData();
-        fd.append("name", form.name.trim());
-        fd.append("blurb", form.blurb);
+        fd.append("name_uz", form.name_uz.trim());
+        fd.append("name_ru", form.name_ru.trim());
+        fd.append("blurb_uz", form.blurb_uz);
+        fd.append("blurb_ru", form.blurb_ru);
         fd.append("sort_order", String(Number(form.sort_order) || 0));
         fd.append("is_active", String(form.is_active));
         fd.append("image", imageFile);
@@ -76,8 +84,10 @@ export function StyleForm({
         }
       } else {
         const payload = {
-          name: form.name.trim(),
-          blurb: form.blurb,
+          name_uz: form.name_uz.trim(),
+          name_ru: form.name_ru.trim(),
+          blurb_uz: form.blurb_uz,
+          blurb_ru: form.blurb_ru,
           sort_order: Number(form.sort_order) || 0,
           is_active: form.is_active,
         };
@@ -105,13 +115,23 @@ export function StyleForm({
         </div>
       )}
 
-      <Field label="Nomi">
-        <Input value={form.name} onChange={(e) => set("name", e.target.value)} />
-      </Field>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <Field label="Nomi (UZ)">
+          <Input value={form.name_uz} onChange={(e) => set("name_uz", e.target.value)} />
+        </Field>
+        <Field label="Nomi (RU)">
+          <Input value={form.name_ru} onChange={(e) => set("name_ru", e.target.value)} />
+        </Field>
+      </div>
 
-      <Field label="Tavsif">
-        <Textarea rows={3} value={form.blurb} onChange={(e) => set("blurb", e.target.value)} />
-      </Field>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <Field label="Tavsif (UZ)">
+          <Textarea rows={3} value={form.blurb_uz} onChange={(e) => set("blurb_uz", e.target.value)} />
+        </Field>
+        <Field label="Tavsif (RU)">
+          <Textarea rows={3} value={form.blurb_ru} onChange={(e) => set("blurb_ru", e.target.value)} />
+        </Field>
+      </div>
 
       <Field label="Rasm" hint="Ixtiyoriy">
         {isEdit && style?.image && !imageFile && (

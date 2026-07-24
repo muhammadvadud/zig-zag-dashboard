@@ -7,7 +7,8 @@ import { useToast } from "@/components/ui/toast";
 
 export interface Category {
   id: number;
-  name: string;
+  name_uz: string;
+  name_ru: string;
   slug?: string;
   sort_order?: number;
   is_active?: boolean;
@@ -15,7 +16,8 @@ export interface Category {
 }
 
 type FormState = {
-  name: string;
+  name_uz: string;
+  name_ru: string;
   sort_order: string;
   is_active: boolean;
 };
@@ -36,7 +38,8 @@ function parseApiErrors(err: unknown): string {
 
 function initial(category?: Category | null): FormState {
   return {
-    name: category?.name ?? "",
+    name_uz: category?.name_uz ?? "",
+    name_ru: category?.name_ru ?? "",
     sort_order: category ? String(category.sort_order ?? 0) : "0",
     is_active: category?.is_active ?? true,
   };
@@ -66,8 +69,8 @@ export function CategoryForm({
     e.preventDefault();
     setError(null);
 
-    if (!form.name.trim()) {
-      setError("Nomi majburiy");
+    if (!form.name_uz.trim()) {
+      setError("Nomi (UZ) majburiy");
       return;
     }
 
@@ -75,7 +78,8 @@ export function CategoryForm({
     try {
       if (imageFile) {
         const fd = new FormData();
-        fd.append("name", form.name.trim());
+        fd.append("name_uz", form.name_uz.trim());
+        fd.append("name_ru", form.name_ru.trim());
         fd.append("sort_order", String(Number(form.sort_order) || 0));
         fd.append("is_active", String(form.is_active));
         fd.append("image", imageFile);
@@ -86,7 +90,8 @@ export function CategoryForm({
         }
       } else {
         const payload = {
-          name: form.name.trim(),
+          name_uz: form.name_uz.trim(),
+          name_ru: form.name_ru.trim(),
           sort_order: Number(form.sort_order) || 0,
           is_active: form.is_active,
         };
@@ -114,9 +119,14 @@ export function CategoryForm({
         </div>
       )}
 
-      <Field label="Nomi" hint="Slug backend tomonidan avtomatik yaratiladi">
-        <Input value={form.name} onChange={(e) => set("name", e.target.value)} />
-      </Field>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <Field label="Nomi (UZ)" hint="Slug backend tomonidan avtomatik yaratiladi">
+          <Input value={form.name_uz} onChange={(e) => set("name_uz", e.target.value)} />
+        </Field>
+        <Field label="Nomi (RU)">
+          <Input value={form.name_ru} onChange={(e) => set("name_ru", e.target.value)} />
+        </Field>
+      </div>
 
       <Field label="Rasm" hint="Ixtiyoriy">
         {isEdit && category?.image && !imageFile && (

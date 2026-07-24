@@ -8,18 +8,17 @@ import { PageHeader } from "@/components/ui/page";
 import { Modal } from "@/components/ui/modal";
 import { useToast } from "@/components/ui/toast";
 import { asList } from "../_shared/list";
-import { MaterialForm } from "./MaterialForm";
-import type { Material } from "@/lib/types";
+import { MaterialForm, type AdminMaterial } from "./MaterialForm";
 
 export default function MaterialsPage() {
   const notify = useToast();
   const [createOpen, setCreateOpen] = useState(false);
-  const [editing, setEditing] = useState<Material | null>(null);
-  const [deleting, setDeleting] = useState<Material | null>(null);
+  const [editing, setEditing] = useState<AdminMaterial | null>(null);
+  const [deleting, setDeleting] = useState<AdminMaterial | null>(null);
   const [deletingBusy, setDeletingBusy] = useState(false);
 
   const { data, error, isLoading, mutate } = useApi<unknown>("/admin/materials/");
-  const rows = asList<Material>(data);
+  const rows = asList<AdminMaterial>(data);
 
   async function onDelete() {
     if (!deleting) return;
@@ -84,9 +83,13 @@ export default function MaterialsPage() {
               </div>
 
               <div className="mt-4">
-                <h3 className="truncate text-base font-semibold text-navy-800">{m.name || "—"}</h3>
+                <h3 className="truncate text-base font-semibold text-navy-800">
+                  {m.name_uz}
+                  {m.name_ru && <span className="text-navy-400 font-normal"> / {m.name_ru}</span>}
+                </h3>
                 <p className="mt-0.5 truncate text-sm text-navy-400">
-                  {m.description || m.slug || "—"}
+                  {m.description_uz || m.slug || "—"}
+                  {m.description_ru && <span className="text-navy-300"> / {m.description_ru}</span>}
                 </p>
               </div>
 
@@ -147,7 +150,7 @@ export default function MaterialsPage() {
         }
       >
         <p className="text-sm text-navy-600">
-          <b className="text-navy-800">{deleting?.name}</b> matosini o'chirmoqchimisiz? Bu amalni
+          <b className="text-navy-800">{deleting?.name_uz}</b> matosini o'chirmoqchimisiz? Bu amalni
           qaytarib bo'lmaydi.
         </p>
       </Modal>

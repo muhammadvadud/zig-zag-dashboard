@@ -135,9 +135,14 @@ export default function HeroPage() {
       header: "Sarlavha",
       render: (r) => (
         <div>
-          {r.eyebrow && <div className="text-xs text-gold-dark">{r.eyebrow}</div>}
+          {(r.eyebrow_uz || r.eyebrow_ru) && (
+            <div className="text-xs text-gold-dark">{r.eyebrow_uz || r.eyebrow_ru}</div>
+          )}
           <span className="font-medium text-navy-800">
-            {r.title || "—"} {r.title_italic && <i className="text-navy-500">{r.title_italic}</i>}
+            {r.title_uz || r.title_ru || "—"}{" "}
+            {(r.title_italic_uz || r.title_italic_ru) && (
+              <i className="text-navy-500">{r.title_italic_uz || r.title_italic_ru}</i>
+            )}
           </span>
         </div>
       ),
@@ -146,7 +151,11 @@ export default function HeroPage() {
       key: "description",
       header: "Tavsif",
       className: "max-w-md !whitespace-normal",
-      render: (r) => <span className="text-navy-600">{truncate(r.description, 120)}</span>,
+      render: (r) => (
+        <span className="text-navy-600">
+          {truncate(r.description_uz || r.description_ru, 120)}
+        </span>
+      ),
     },
     {
       key: "sort_order",
@@ -275,7 +284,7 @@ export default function HeroPage() {
         }
       >
         <p className="text-sm text-navy-600">
-          <b className="text-navy-800">{deleting?.title}</b> hero matnini o'chirmoqchimisiz? Bu
+          <b className="text-navy-800">{deleting?.title_uz || deleting?.title_ru}</b> hero matnini o'chirmoqchimisiz? Bu
           amalni qaytarib bo'lmaydi.
         </p>
       </Modal>

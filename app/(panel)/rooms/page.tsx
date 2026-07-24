@@ -38,9 +38,14 @@ export default function RoomsPage() {
 
   const columns: Column<Room>[] = [
     {
-      key: "name",
-      header: "Nomi",
-      render: (r) => <span className="font-medium text-navy-800">{r.name || "—"}</span>,
+      key: "name_uz",
+      header: "Nomi (UZ)",
+      render: (r) => <span className="font-medium text-navy-800">{r.name_uz || "—"}</span>,
+    },
+    {
+      key: "name_ru",
+      header: "Nomi (RU)",
+      render: (r) => <span className="font-medium text-navy-800">{r.name_ru || "—"}</span>,
     },
     { key: "slug", header: "Slug", render: (r) => <span className="text-navy-500">{r.slug || "—"}</span> },
     {
@@ -129,7 +134,7 @@ export default function RoomsPage() {
         }
       >
         <p className="text-sm text-navy-600">
-          <b className="text-navy-800">{deleting?.name}</b> xonasini o'chirmoqchimisiz? Bu amalni
+          <b className="text-navy-800">{deleting?.name_uz}</b> xonasini o'chirmoqchimisiz? Bu amalni
           qaytarib bo'lmaydi.
         </p>
       </Modal>

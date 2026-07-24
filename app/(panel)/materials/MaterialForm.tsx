@@ -4,19 +4,33 @@ import { useState } from "react";
 import { api, ApiError } from "@/lib/api";
 import { Button, Field, Input, Textarea } from "@/components/ui";
 import { useToast } from "@/components/ui/toast";
-import type { Material } from "@/lib/types";
+export interface AdminMaterial {
+  id: number;
+  name_uz: string;
+  name_ru: string;
+  slug?: string;
+  description_uz?: string;
+  description_ru?: string;
+  sort_order?: number;
+  is_active?: boolean;
+  products_count?: number;
+}
 
 type FormState = {
-  name: string;
-  description: string;
+  name_uz: string;
+  name_ru: string;
+  description_uz: string;
+  description_ru: string;
   sort_order: string;
   is_active: boolean;
 };
 
-function initial(material?: Material | null): FormState {
+function initial(material?: AdminMaterial | null): FormState {
   return {
-    name: material?.name ?? "",
-    description: material?.description ?? "",
+    name_uz: material?.name_uz ?? "",
+    name_ru: material?.name_ru ?? "",
+    description_uz: material?.description_uz ?? "",
+    description_ru: material?.description_ru ?? "",
     sort_order: material ? String(material.sort_order ?? 0) : "0",
     is_active: material?.is_active ?? true,
   };
@@ -27,7 +41,7 @@ export function MaterialForm({
   onClose,
   onSaved,
 }: {
-  material?: Material | null;
+  material?: AdminMaterial | null;
   onClose: () => void;
   onSaved: () => void;
 }) {
@@ -45,14 +59,16 @@ export function MaterialForm({
     e.preventDefault();
     setError(null);
 
-    if (!form.name.trim()) {
-      setError("Nomi majburiy");
+    if (!form.name_uz.trim()) {
+      setError("Nomi (UZ) majburiy");
       return;
     }
 
     const payload = {
-      name: form.name.trim(),
-      description: form.description.trim(),
+      name_uz: form.name_uz.trim(),
+      name_ru: form.name_ru.trim(),
+      description_uz: form.description_uz.trim(),
+      description_ru: form.description_ru.trim(),
       sort_order: Number(form.sort_order) || 0,
       is_active: form.is_active,
     };
@@ -82,22 +98,41 @@ export function MaterialForm({
         </div>
       )}
 
-      <Field label="Nomi">
-        <Input
-          value={form.name}
-          onChange={(e) => set("name", e.target.value)}
-          placeholder="Masalan: Linen, Velvet, Paxta..."
-        />
-      </Field>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <Field label="Nomi (UZ)">
+          <Input
+            value={form.name_uz}
+            onChange={(e) => set("name_uz", e.target.value)}
+            placeholder="Masalan: Linen, Velvet, Paxta..."
+          />
+        </Field>
+        <Field label="Nomi (RU)">
+          <Input
+            value={form.name_ru}
+            onChange={(e) => set("name_ru", e.target.value)}
+            placeholder="Например: Лен, Бархат, Хлопок..."
+          />
+        </Field>
+      </div>
 
-      <Field label="Tavsif" hint="Ixtiyoriy — mahsulot detalida ko'rsatiladi">
-        <Textarea
-          rows={2}
-          value={form.description}
-          onChange={(e) => set("description", e.target.value)}
-          placeholder="Mato haqida qisqa ma'lumot..."
-        />
-      </Field>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <Field label="Tavsif (UZ)" hint="Ixtiyoriy — mahsulot detalida ko'rsatiladi">
+          <Textarea
+            rows={2}
+            value={form.description_uz}
+            onChange={(e) => set("description_uz", e.target.value)}
+            placeholder="Mato haqida qisqa ma'lumot..."
+          />
+        </Field>
+        <Field label="Tavsif (RU)" hint="Ixtiyoriy">
+          <Textarea
+            rows={2}
+            value={form.description_ru}
+            onChange={(e) => set("description_ru", e.target.value)}
+            placeholder="Краткое описание ткани..."
+          />
+        </Field>
+      </div>
 
       <Field label="Tartib">
         <Input

@@ -38,16 +38,21 @@ export default function CategoriesPage() {
 
   const columns: Column<Category>[] = [
     {
-      key: "name",
-      header: "Nomi",
-      render: (c) => <span className="font-medium text-navy-800">{c.name || "—"}</span>,
+      key: "name_uz",
+      header: "Nomi (UZ)",
+      render: (c) => <span className="font-medium text-navy-800">{c.name_uz || "—"}</span>,
+    },
+    {
+      key: "name_ru",
+      header: "Nomi (RU)",
+      render: (c) => <span className="font-medium text-navy-800">{c.name_ru || "—"}</span>,
     },
     { key: "slug", header: "Slug", render: (c) => <span className="text-navy-500">{c.slug || "—"}</span> },
     {
       key: "is_active",
       header: "Holat",
       render: (c) =>
-        c.is_active ? <Badge color="green">Faol</Badge> : <Badge color="gray">Nofaol</Badge>,
+          c.is_active ? <Badge color="green">Faol</Badge> : <Badge color="gray">Nofaol</Badge>,
     },
     { key: "sort_order", header: "Tartib", align: "center", render: (c) => c.sort_order ?? "—" },
     {
@@ -133,7 +138,7 @@ export default function CategoriesPage() {
         }
       >
         <p className="text-sm text-navy-600">
-          <b className="text-navy-800">{deleting?.name}</b> kategoriyasini o'chirmoqchimisiz? Bu
+          <b className="text-navy-800">{deleting?.name_uz}</b> kategoriyasini o'chirmoqchimisiz? Bu
           amalni qaytarib bo'lmaydi.
         </p>
       </Modal>
