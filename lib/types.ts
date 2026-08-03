@@ -326,3 +326,66 @@ export interface RecentOrder {
   total: string | number;
   created_at: string;
 }
+
+// ---- AI ----
+export interface AdminConversation {
+  id: number;
+  user_phone: string;
+  user_name: string;
+  title: string;
+  message_count: number;
+  total_tokens: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AdminMessage {
+  id: number;
+  role: "user" | "assistant" | "system";
+  content: string;
+  input_tokens: number | null;
+  output_tokens: number | null;
+  model: string;
+  created_at: string;
+}
+
+export interface AdminConversationDetail extends AdminConversation {
+  total_input_tokens: number;
+  total_output_tokens: number;
+  messages: AdminMessage[];
+}
+
+export interface AdminTokenUsage {
+  user_id: number;
+  user_phone: string;
+  user_name: string;
+  period: string;
+  tokens_used: number;
+  token_limit: number;
+  images_used: number;
+  image_limit: number;
+  messages_used: number;
+  usage_percent: number;
+  conversation_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AIUsageStats {
+  total_conversations: number;
+  total_messages: number;
+  total_images: number;
+  total_tokens: number;
+  active_users: number;
+  top_users: {
+    user_id: number;
+    phone: string;
+    full_name: string;
+    tokens_used: number;
+    token_limit: number;
+    images_used: number;
+    messages_used: number;
+    usage_percent: number;
+    period: string;
+  }[];
+}

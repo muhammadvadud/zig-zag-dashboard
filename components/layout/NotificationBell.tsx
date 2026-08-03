@@ -37,68 +37,6 @@ export function NotificationBell() {
   );
   const rows = data?.results ?? [];
 
-  // Connect to WebSocket for real-time notification updates
-  useEffect(() => {
-    const token = tokens.access;
-    if (!token) return;
-
-    let wsUrl = "";
-    if (typeof window !== "undefined") {
-      let base = API_BASE;
-      if (!base.startsWith("http")) {
-        const loc = window.location;
-        const protocol = loc.protocol === "https:" ? "https:" : "http:";
-        base = `${protocol}//${loc.host}${base}`;
-      }
-      wsUrl = base.replace(/^http/, "ws").replace(/\/api\/v1\/?$/, "/ws/notifications/");
-      wsUrl = `${wsUrl}?token=${token}`;
-    }
-
-    if (!wsUrl) return;
-
-    let socket: WebSocket | null = null;
-    let reconnectTimeout: NodeJS.Timeout | null = null;
-    let shouldReconnect = true;
-
-    function connect() {
-      socket = new WebSocket(wsUrl);
-
-      socket.onmessage = (event) => {
-        try {
-          const msg = JSON.parse(event.data);
-          if (msg.type === "new_notification" || msg.type === "unread_count_update" || msg.type === "unread_count") {
-            mutateCount();
-            mutate();
-          }
-        } catch (e) {
-          console.error("Failed to parse WebSocket message:", e);
-        }
-      };
-
-      socket.onclose = (event) => {
-        socket = null;
-        if (shouldReconnect) {
-          reconnectTimeout = setTimeout(connect, 5000);
-        }
-      };
-
-      socket.onerror = (err) => {
-        console.error("WebSocket error:", err);
-      };
-    }
-
-    connect();
-
-    return () => {
-      shouldReconnect = false;
-      if (socket) {
-        socket.close();
-      }
-      if (reconnectTimeout) {
-        clearTimeout(reconnectTimeout);
-      }
-    };
-  }, [mutate, mutateCount]);
 
   // Track notification ids we've already surfaced so a browser Notification
   // only fires for genuinely new arrivals — never for the pre-existing
