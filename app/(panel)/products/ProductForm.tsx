@@ -519,7 +519,7 @@ export function ProductForm({ product }: { product?: AdminProduct | null }) {
                     <Tag className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-navy-300" />
                     <Select className="w-full pl-9" value={form.category} onChange={(e) => set("category", e.target.value)}>
                       <option value="">— Tanlang —</option>
-                      {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                      {categories.map((c) => <option key={c.id} value={c.id}>{c.name_uz}</option>)}
                     </Select>
                   </div>
                 </Field>
@@ -774,7 +774,7 @@ export function ProductForm({ product }: { product?: AdminProduct | null }) {
                       className={cn("inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition-all",
                         active ? "border-gold bg-gold/10 text-navy-900 ring-1 ring-gold/40" : "border-navy-200 bg-white text-navy-600 hover:border-navy-300")}>
                       {active && <Check className="size-3.5 text-gold-dark" />}
-                      {s.name}
+                      {s.name_uz}
                     </button>
                   );
                 })}
@@ -795,7 +795,7 @@ export function ProductForm({ product }: { product?: AdminProduct | null }) {
                       className={cn("inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition-all",
                         active ? "border-gold bg-gold/10 text-navy-900 ring-1 ring-gold/40" : "border-navy-200 bg-white text-navy-600 hover:border-navy-300")}>
                       {active && <Check className="size-3.5 text-gold-dark" />}
-                      {r.name}
+                      {r.name_uz}
                     </button>
                   );
                 })}
@@ -836,7 +836,7 @@ export function ProductForm({ product }: { product?: AdminProduct | null }) {
                         <Layers className="size-5" />
                       </span>
                       <span className="min-w-0">
-                        <span className="block truncate text-sm font-semibold text-navy-800">{m.name}</span>
+                        <span className="block truncate text-sm font-semibold text-navy-800">{m.name_uz}</span>
                         <span className="block truncate text-xs text-navy-400">{m.description || m.slug}</span>
                       </span>
                       {active && (

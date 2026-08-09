@@ -136,7 +136,8 @@ export interface Color {
 export interface Style {
   id: number;
   slug: string;
-  name: string;
+  name_uz: string;
+  name_ru: string;
   is_active?: boolean;
   sort_order?: number;
 }
@@ -145,7 +146,8 @@ export interface Style {
 export interface Room {
   id: number;
   slug: string;
-  name: string;
+  name_uz: string;
+  name_ru: string;
   is_active?: boolean;
   sort_order?: number;
 }
@@ -154,7 +156,8 @@ export interface Room {
 export interface Material {
   id: number;
   slug: string;
-  name: string;
+  name_uz: string;
+  name_ru: string;
   description?: string;
   is_active?: boolean;
   sort_order?: number;

@@ -311,6 +311,18 @@ export default function OrderDetailPage() {
               </div>
             </InfoCard>
 
+            {/* Tarif */}
+            <InfoCard
+              icon={<Package className="size-4" />}
+              label="Tarif"
+            >
+              <div className="space-y-2">
+                <p className="font-semibold text-navy-800 text-base">
+                  {data.service_tariff || "—"}
+                </p>
+              </div>
+            </InfoCard>
+
             {/* Yetkazib berish manzili */}
             <InfoCard
               icon={<MapPin className="size-4" />}
